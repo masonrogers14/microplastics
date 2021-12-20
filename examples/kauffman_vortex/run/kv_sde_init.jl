@@ -1,56 +1,31 @@
 using Pkg
 Pkg.activate(".")
-using DifferentialEquations
+using DifferentialEquations, Printf
 
-#Maxey-Riley parameters
-const B = 0.98 #density ratio ρ/ρᶠ
-const ν = 1e-6 #fluid viscosity
-const d = 1e-3 #particle diameter
-const g = 9.8 #gravity
-const Us = 1.0 #characteristic velocity scale of flow
-const Ls = 1.0 #characteristic length scale of flow
-
-#dimensional 2d diffusivity
-const κ = 4e-5
+#read parameters
+io = open("kv_param.py", "r")
+param_str_list = readlines(io)
+close(io)
+for param_str in param_str_list
+    param_expr = Meta.parse(param_str)
+    if !(typeof(param_expr) == Nothing)
+        if param_expr.head == :(=)
+            eval(Expr(:const, param_expr))
+        end
+    end
+end
 
 #nondimensional parameters
 const ϵ = ((1+2*B)*d^2*Us)/(36*ν*Ls) #should be small
 const C = (2*g*(B-1)*Ls*ϵ)/((1+2*B)*Us^2) #should be O(1)
 const A = κ/ϵ/Us/Ls
-
-#4d noise magnitude
-const α = sqrt(2*Us^3*A/Ls/ϵ)
-
-using Printf
 @printf "A: %.6f\n" A
 @printf "C: %.6f\n" C
 @printf "ϵ: %.6f\n" ϵ
 @printf "κ: %.6f\n" κ
 
-#Rankine vortex parameters
-const R = .5
-const a = .2
-const Γ = 1.
-
-#output grid parameters
-const dx = .01
-const dy = .01
-const dz = 1.0
-const nx = Int(round(2*R/dx)) + 4
-const ny = Int(round(2*R/dy)) + 4
-const nz = 1
-const dt = 1e-3
-const vol = dx*dy*dz
-const XG = dx .* collect(-nx/2:nx/2-1)
-const XC = XG .+ dx/2 
-const YG = dy .* collect(-ny/2:ny/2-1) 
-const YC = YG .+ dy/2
-const RF = dz .* collect(nz:-1:0) #length nz+1
-const RC = (RF[1:end-1] .+ RF[2:end]) ./ 2
-
-#histogram bin edges and flips
-const edges = (vcat(XG, maximum(XG)+dx), vcat(YG, maximum(YG)+dy))
-const flip_last = false
+#4d noise magnitude
+const α = sqrt(2*Us^3*A/Ls/ϵ)
 
 #fluid velocities
 function fluid_vel(t, x, y)
@@ -99,7 +74,7 @@ function mre_det_2d!(ξ̇, ξ, q, t)
     x, y = ξ
     u, v = parti_vel(t, x, y)
     ξ̇[1] = u
-    ξ̇[2] = v 
+    ξ̇[2] = v
 end
 
 #2d stochastic terms
@@ -117,16 +92,9 @@ function change_ic!(p, i, r)
     return p
 end
 
-#y=0 event
-# function y_axis(ξ,t,integrator)
-#     x, y, u, v = ξ
-#     return y
-# end
-# cb_y_axis = ContinuousCallback(y_axis, (integrator -> integrator), save_positions=(true,false))
-
 #particle exits domain event
 function out(ξ,t,integrator)
-    x, y, u, v = ξ 
+    x, y, u, v = ξ
     ρ = sqrt(x^2+y^2)
     return ρ-R
 end

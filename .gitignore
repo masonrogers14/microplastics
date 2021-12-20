@@ -2,3 +2,5 @@
 *.data
 *.bin
 *.h5
+*.toml
+local*
