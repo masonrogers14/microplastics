@@ -4,6 +4,9 @@
 Created on Fri Jul 16 2021
 
 @author: Mason Rogers
+
+read_MITgcm.py uses xmitgcm to read MITgcm output (or analogous) into xarray
+gridded datasets.
 """
 
 #imports
@@ -13,8 +16,8 @@ import numpy as np
 import xgcm as xg
 
 #data locations
-data_dirs = ["../traj/bin/kv/", "../spec/bin/kv/"] #["../run_alt/", "../traj/bin/"]
-file_names = [['4dprob'], ['2dspec']] #[['tfast'], ['twide']]
+data_dirs = ['../output/']
+file_names = [['2dspec']]
 
 #load
 tmp = {}
@@ -22,12 +25,10 @@ nSoFar = 0
 for dir, fname in zip(data_dirs, file_names):
     print(dir)
     nTracs = 0
-    iters = np.arange(0,1000000,20000)
-    tmp[dir] = xm.open_mdsdataset(dir,iters=iters,
-                                  prefix=[*fname],#'t1bud','t2bud','t3bud','t4bud'],
-                                  geometry='cartesian') 
+    iters = np.arange(0,500000,5000)
+    tmp[dir] = xm.open_mdsdataset(dir, iters=iters, prefix=fname, geometry='cartesian')
     nTracs = len(tmp[dir].data_vars)
-    for j in range(1, nTracs+1): 
+    for j in range(1, nTracs+1):
         tmp[dir] = tmp[dir].rename({'TRAC{0:02d}'.format(j): 'TRAC{0:02d}'.format(j+nSoFar)})
     nSoFar += nTracs
 

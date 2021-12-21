@@ -1,3 +1,15 @@
+#!/usr/bin/env julia
+# -*- coding utf-8 -*-
+#=
+Created on Tue Dec 7 2021
+
+@author Mason Rogers
+
+kv_sde_init.jl defines the constants and functions required on every processor
+used in a multiprocessor ensemble solution of SDEs.
+=#
+
+#imports
 using Pkg
 Pkg.activate(".")
 using DifferentialEquations, Printf
@@ -10,7 +22,11 @@ for param_str in param_str_list
     param_expr = Meta.parse(param_str)
     if !(typeof(param_expr) == Nothing)
         if param_expr.head == :(=)
-            eval(Expr(:const, param_expr))
+            if isinteractive()
+                eval(param_expr)
+            else
+                eval(Expr(:const, param_expr))
+            end
         end
     end
 end
@@ -47,9 +63,6 @@ function fluid_acc(t, x, y)
     return [au, av]
 end
 
-#2d particle velocity
-#To do: implement function parti_vel(t, x, y)
-
 #4d deterministic equations
 function mre_det_4d!(ξ̇, ξ, q, t)
     x, y, u, v = ξ
@@ -69,6 +82,43 @@ function mre_sto_4d!(ξ̇, ξ, q, t)
     ξ̇[4] = α
 end
 
+#modify ensemble initial conditions
+function rand_ic!(p, i, r)
+    Σ = (401/4)*dx^2
+    x₁ = x₀ + sqrt(Σ)*randn(2)
+    u₁ = fluid_vel(0, x₁...)
+    p.u0 .= vcat(x₁, u₁)
+    return p
+end
+
+#continue ensemble
+function renew!(p, i, r)
+    p.u0 .= temp_arr[:,i]
+    return p
+end
+
+#particle exits domain event
+function out_of_domain(ξ,t,integrator)
+    x, y, u, v = ξ
+    ρ = sqrt(x^2+y^2)
+    return ρ-R
+end
+#particle reflects off boundary
+function reflect!(integrator)
+    x, y, u, v = integrator.u
+    sn = (u*x + v*y)/sqrt(x^2 + y^2)
+    integrator.u[3] -= 2*sn*x/sqrt(x^2+y^2)
+    integrator.u[4] -= 2*sn*y/sqrt(x^2+y^2)
+end
+cb_out = ContinuousCallback(out_of_domain, reflect!, save_positions=(false,false))
+
+#package callbacks
+cb_set = CallbackSet(cb_out)
+
+#= XXXX
+#2d particle velocity
+#To do: implement function parti_vel(t, x, y)
+
 #2d deterministic equations
 function mre_det_2d!(ξ̇, ξ, q, t)
     x, y = ξ
@@ -82,23 +132,4 @@ function mre_sto_2d!(ξ̇, ξ, q, t)
     ξ̇[1] = sqrt(2*κ)
     ξ̇[2] = sqrt(2*κ)
 end
-
-#modify ensemble initial conditions
-function change_ic!(p, i, r)
-    Σ = (401/4)*dx^2
-    x₁ = x₀ + sqrt(Σ)*randn(2)
-    u₁ = fluid_vel(0, x₁...)
-    p.u0 .= vcat(x₁, u₁)
-    return p
-end
-
-#particle exits domain event
-function out(ξ,t,integrator)
-    x, y, u, v = ξ
-    ρ = sqrt(x^2+y^2)
-    return ρ-R
-end
-cb_out = ContinuousCallback(out, terminate!, save_positions=(false,false))
-
-#package callbacks
-cb_set = CallbackSet(cb_out)
+=#

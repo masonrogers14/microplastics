@@ -1,27 +1,33 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
 """
-Dedalus script for 2D advection-diffusion
-To run, merge, and plot using 4 processes, for instance, you could use:
-    $ mpiexec -n 2 python3 dww.py
-    $ mpiexec -n 2 python3 -m dedalus merge_procs test_rv
-    $ mpiexec -n 2 python3 plot_slices.py test_rv/*.h5
-The simulations should take a few process-minutes to run.
+Created on Fri Jul 16 2021
+
+@author: Mason Rogers
+
+kv_fpe_2d.py solves the Fokker-Planck equation for a distribution of particles
+in a Kauffman vortex using Dedalus. Multiprocessing is enabled natively; use
+> mpiexec -n <# of procs> kv_fpe_2d.py
 """
 
 import time
 import pathlib
 import logging
-import kv_param
 import numpy as np
 from mpi4py import MPI
+from kv_param import *
 from scipy.stats import norm
 from dedalus import public as de
 from dedalus.extras import flow_tools
 
 logger = logging.getLogger(__name__)
 
+#nondimensional parameters
+ϵ = ((1+2*B)*d**2*Us)/(36*ν*Ls) #should be small
+
 # Create bases and domain
-s_basis = de.Fourier('s', 64, interval=(0, 2*np.pi), dealias=3/2) #s <--> θ
-r_basis = de.Chebyshev('r', 64, interval=(0.0, R), dealias=3/2)
+s_basis = de.Fourier('s', 2, interval=(0, 2*np.pi), dealias=3/2) #s <--> θ
+r_basis = de.Chebyshev('r', 1024, interval=(0.0, R), dealias=3/2)
 domain = de.Domain([s_basis, r_basis], grid_dtype=np.float64)
 s, r = domain.grids(scales=1)
 
@@ -59,7 +65,7 @@ s, r = domain.all_grids()
 p = solver.state['p']
 pr = solver.state['pr']
 ps = solver.state['ps']
-Σ = (401/4)*(.01)**2
+Σ = (401/4)*dx**2
 p['g'] = norm.pdf(r, scale=np.sqrt(Σ)) / np.sqrt(2*np.pi*Σ)
 p.differentiate('r', out=pr)
 p.differentiate('s', out=ps)

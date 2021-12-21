@@ -15,10 +15,11 @@ a = .2
 Γ = 1.
 
 #solver parameters
-tStop = 1000.0
-wFreq = 0.5
+tStop = 100.0
+wFreq = 5.0
 
 #output grid parameters
 dx = .01
 dy = .01
 dz = 1.0
+dt = 1e-3

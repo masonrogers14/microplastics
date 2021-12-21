@@ -1,8 +1,21 @@
+#!/usr/bin/env julia
+# -*- coding utf-8 -*-
+#=
+Created on Sat Dec 18 2021
+
+@author Mason Rogers
+
+kv_traj2hist.jl takes trajectory ensembles from DiffEq.jl and generates gridded
+output analogous to MITgcm output.
+=#
+
+#imports
+using Printf
+
 #grid parameters
 const nx = Int(round(2*R/dx)) + 4
 const ny = Int(round(2*R/dy)) + 4
 const nz = 1
-const dt = 1e-3
 const vol = dx*dy*dz
 const XG = dx .* collect(-nx/2:nx/2-1)
 const XC = XG .+ dx/2
@@ -10,31 +23,31 @@ const YG = dy .* collect(-ny/2:ny/2-1)
 const YC = YG .+ dy/2
 const RF = dz .* collect(nz:-1:0) #length nz+1
 const RC = (RF[1:end-1] .+ RF[2:end]) ./ 2
+const nOuts = Int(floor(tStop/wFreq) + 1)
 
 #histogram bin edges and flips
 const edges = (vcat(XG, maximum(XG)+dx), vcat(YG, maximum(YG)+dy))
 const flip_last = false
 
 #save trajectories
-function save_trajectories()
-    io = open(t_fname, "w")
-    write(io, solu_arr)
-    close(io)
+function save_trajectories(j::Int64)
+	t_suffix = @sprintf ".%010d.bin" Int(round(wFreq*j/dt))
+	io = open(t_prefix*t_suffix, "w")
+	write(io, temp_arr)
+	close(io)
 end
 
 #compute and save histogram data in MITgcm format
-function save_histogram()
-    for j in 1:nOuts
-        v = .~ isnan.(solu_arr[:,j,1])
-        h_j = fit(Histogram, ([solu_arr[v,j,i] for i in 1:size(solu_arr)[3]]...,), edges).weights
-        if flip_last
-            h_j = reverse(h_j, dims=length(size(h_j)))
+function save_histogram(j::Int64)
+    v = .~ isnan.(temp_arr[1,:])
+    h_j = fit(Histogram, ([temp_arr[i,v] for i in 1:size(temp_arr)[1]÷2]...,), edges).weights
+    if flip_last
+        h_j = reverse(h_j, dims=length(size(h_j)))
 	end
-        h_suffix = @sprintf ".%010d.data" Int(wFreq * (j-1) / dt)
-        io = open(h_prefix*h_suffix, "w")
-        write(io, hton.(convert(Array{Float32,2}, h_j/(vol*nTraj))))
-        close(io)
-    end
+    h_suffix = @sprintf ".%010d.data" Int(round(wFreq*j/dt))
+    io = open(h_prefix*h_suffix, "w")
+    write(io, hton.(convert(Array{Float32,2}, h_j/(vol*nTraj))))
+    close(io)
 end
 
 #save grid if necessary
@@ -232,7 +245,7 @@ function pack_grid()
     close(io)
 
     for j in 1:nOuts
-        nt = Int(wFreq*(j-1)/dt)
+        nt = Int(round(wFreq*(j-1)/dt))
         h_suffix = @sprintf ".%010d.meta" nt
         io = open(h_prefix*h_suffix, "w")
         write(io, @sprintf "nDims = [3]; \ndimList = [\n  %d, 1, %d,\n  %d, 1, %d,\n  %d, 1, %d \n]; \ndataprec = ['float32']; \nnrecords = [1]; \ntimeStepNumber = [0]; \ntimeInterval = [%.8e]; \nnFlds = [1]; \nfldList = { \n'TRAC01  ' \n};" nx nx ny ny nz nz nt*dt)

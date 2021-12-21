@@ -1,17 +1,18 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-Created on Wed May 12 2021
+Created on Sat Dec 18 2021
 
 @author: Mason Rogers
 
-kv_io.py: handle output from the Kauffman vortex experiment.
+kv_spec2hist.py takes coefficient-space output from Dedalus in HDF5 format
+and generates gridded output analogous to MITgcm output.
 """
 
 #tinker
 in_dir = "kv_snaps/"
 in_file = in_dir+"kv_snaps_s1.h5"
-out_dir = "bin/kv/"
+out_dir = "../output/"
 h_prefix = out_dir+"2dspec"
 
 #imports
@@ -19,6 +20,7 @@ import h5py
 import numpy as np
 import xarray as xr
 import xmitgcm as xm
+from kv_param import *
 import matplotlib.pyplot as plt
 from scipy.special import eval_chebyt
 from matplotlib.colors import LogNorm
@@ -34,37 +36,33 @@ with h5py.File(in_file, mode='r') as file:
                        name = 'TRAC01')
 
 #round to correct times
-time = np.arange(0,1001,20)
+time = np.arange(0, tStop+wFreq/2, wFreq)
 p_c = p_c.interp(t=time)
 
-#Kaufmann vortex parameters
-R = .5
-
 #make grid
-dx = .01
-dy = .01
-dt = 1e-3
 nx = round(2*R/dx) + 4
 ny = round(2*R/dy) + 4
 XC = np.arange((1-nx)/2*dx, nx/2*dx, dx)
 YC = np.arange((1-ny)/2*dy, ny/2*dy, dy)
-XC = xr.DataArray(data=XC, dims=['XC'], coords={'XC': XC}) 
+XC = xr.DataArray(data=XC, dims=['XC'], coords={'XC': XC})
 YC = xr.DataArray(data=YC, dims=['YC'], coords={'YC': YC})
+
+#normalized s (0, 2π) and r (-1, 1) for dedalus
 s = np.arctan2(YC,XC)
 rn = 2*np.sqrt(XC**2+YC**2)/R - 1
-ks_p = p_c['ks'].sel(ks=slice(1,None))
+ks = p_c['ks']
 Tr = p_c['Tr']
 
 #pack data files (can get grid/meta from ../traj/ode_io.jl)
-for t_j in time: 
-    p_c_j = p_c.sel(t=t_j)
+for t_j in time:
+    p_g = xr.zeros_like(rn) #initialize time step histogram
+    for Tr_j in Tr:
+        p_g += np.real(p_c.sel(t=t_j, ks=0, Tr=Tr_j) * eval_chebyt(Tr_j, rn)) #compute k=0 component
+        for ks_j in ks[1:]: #compute k>0 components
+            p_g += 2*np.real(p_c.sel(t=t_j, ks=ks_j, Tr=Tr_j) * eval_chebyt(Tr_j, rn) * np.exp(1j*ks_j*s))
+    p_g = p_g.where(XC**2 + YC**2 < R**2, 0)
 
-    p_cp_j = p_c_j.sel(ks=slice(1,None))
-    p_gp_j = (p_cp_j * eval_chebyt(Tr,rn) * np.exp(1j*ks_p*s)).sum(dim=['Tr','ks'])
-    p_g0_j = (p_c_j.sel(ks=0) * eval_chebyt(Tr,rn)).sum(dim='Tr')
-    p_g_j = np.real(2*p_gp_j + p_g0_j)
+    xm.utils.write_to_binary(p_g.transpose('YC','XC').values.flatten(),
+                             h_prefix+".{0:010d}".format(round(t_j/dt))+".data")
 
-    p_g_j = p_g_j.where(XC**2 + YC**2 < R**2, 0)
-    
-    xm.utils.write_to_binary(p_g_j.transpose('YC','XC').values.flatten(),
-                             h_prefix+".{0:010d}".format(round(t_j/dt))+".data") 
+    print(t_j)
