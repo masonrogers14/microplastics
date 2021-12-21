@@ -12,7 +12,7 @@ used in a multiprocessor ensemble solution of SDEs.
 #imports
 using Pkg
 Pkg.activate(".")
-using DifferentialEquations, Printf
+using DifferentialEquations, Printf, Distributed, SharedArrays
 
 #read parameters
 io = open("kv_param.py", "r")
@@ -93,7 +93,7 @@ end
 
 #continue ensemble
 function renew!(p, i, r)
-    p.u0 .= temp_arr[:,i]
+    p.u0 .= remotecall_fetch(eval, 1, Meta.parse(@sprintf "temp_arr[:,%d]" i))
     return p
 end
 

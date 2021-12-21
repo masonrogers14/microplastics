@@ -11,7 +11,7 @@ with all available processors.
 =#
 
 #tinker
-nTraj = 1000000
+nTraj = 5
 saveTraj = false
 saveHist = true
 packGrid = true
@@ -24,18 +24,19 @@ using Pkg
 Pkg.activate(".")
 
 #add processors
-using DifferentialEquations, StatsBase, Distributed
+using Distributed
 if "SLURM_NTASKS" in keys(ENV)
     using ClusterManagers
     addprocs(SlurmManager(parse(Int,ENV["SLURM_NTASKS"])-1))
 end
+addprocs(1)
 
 #imports
 @everywhere include("kv_sde_init.jl")
 include("kv_traj2hist.jl")
 
 #initialize storage arrays
-temp_arr = NaN * zeros(4, nTraj)
+temp_arr = NaN*zeros(4,nTraj)#SharedArray{Float64,2}((4,nTraj); pids=[1,2])
 inMemory = nTraj * nOuts < 1e5
 if inMemory
     full_arr = NaN * zeros(4, nTraj, nOuts)

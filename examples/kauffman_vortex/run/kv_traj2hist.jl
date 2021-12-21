@@ -10,7 +10,7 @@ output analogous to MITgcm output.
 =#
 
 #imports
-using Printf
+using Printf, StatsBase
 
 #grid parameters
 const nx = Int(round(2*R/dx)) + 4
