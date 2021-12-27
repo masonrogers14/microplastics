@@ -12,7 +12,7 @@ used in a multiprocessor ensemble solution of SDEs.
 #imports
 using Pkg
 Pkg.activate(".")
-using DifferentialEquations, Printf, Distributed, SharedArrays
+using DifferentialEquations, Printf, Distributed
 
 #read parameters
 io = open("kv_param.py", "r")
@@ -84,16 +84,21 @@ end
 
 #modify ensemble initial conditions
 function rand_ic!(p, i, r)
-    Σ = (401/4)*dx^2
+    Σ = (401/16)*dx^2
     x₁ = x₀ + sqrt(Σ)*randn(2)
     u₁ = fluid_vel(0, x₁...)
     p.u0 .= vcat(x₁, u₁)
     return p
 end
 
+#retrieve initial conditions from process 1
+function get_ic(i::Int64)
+    return temp_arr[:,i]
+end
+
 #continue ensemble
 function renew!(p, i, r)
-    p.u0 .= remotecall_fetch(eval, 1, Meta.parse(@sprintf "temp_arr[:,%d]" i))
+    p.u0 .= remotecall_fetch(get_ic, 1, i)
     return p
 end
 

@@ -16,7 +16,7 @@ a = .2
 
 #solver parameters
 tStop = 100.0
-wFreq = 5.0
+wFreq = 0.25
 
 #output grid parameters
 dx = .01

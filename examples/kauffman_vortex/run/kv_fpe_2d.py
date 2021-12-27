@@ -26,8 +26,8 @@ logger = logging.getLogger(__name__)
 ϵ = ((1+2*B)*d**2*Us)/(36*ν*Ls) #should be small
 
 # Create bases and domain
-s_basis = de.Fourier('s', 2, interval=(0, 2*np.pi), dealias=3/2) #s <--> θ
-r_basis = de.Chebyshev('r', 1024, interval=(0.0, R), dealias=3/2)
+s_basis = de.Fourier('s', 64, interval=(0, 2*np.pi), dealias=3/2) #s <--> θ
+r_basis = de.Chebyshev('r', 64, interval=(0.0, R), dealias=3/2)
 domain = de.Domain([s_basis, r_basis], grid_dtype=np.float64)
 s, r = domain.grids(scales=1)
 
@@ -36,7 +36,7 @@ ad_s = domain.new_field(name='ad_s')
 ad_s['g'] = Γ/2/np.pi/(r**2+a**2) * r
 ad_s.meta['s']['constant'] = True
 ad_r = domain.new_field(name='ad_r')
-ad_r['g'] = -(Γ/2/np.pi/(r**2+a**2))**2 * r * (ϵ*Ls/Us) * (1-B) / (1+2*B)
+ad_r['g'] = -(Γ/2/np.pi/(r**2+a**2))**2 * r * (ϵ*Ls/Us) * 2*(1-B) / (1+2*B)
 ad_r.meta['s']['constant'] = True
 
 # 2D equations
@@ -65,8 +65,10 @@ s, r = domain.all_grids()
 p = solver.state['p']
 pr = solver.state['pr']
 ps = solver.state['ps']
-Σ = (401/4)*dx**2
-p['g'] = norm.pdf(r, scale=np.sqrt(Σ)) / np.sqrt(2*np.pi*Σ)
+Σ = (401/16)*dx**2
+x0 = 0.2
+y0 = 0.0
+p['g'] = 1/(2*np.pi*Σ) * np.exp(-(r**2 - 2*r*(x0*np.cos(s)+y0*np.sin(s)) + x0**2+y0**2)/(2*Σ))
 p.differentiate('r', out=pr)
 p.differentiate('s', out=ps)
 
@@ -78,7 +80,6 @@ p.differentiate('s', out=ps)
 # plt.show()
 
 # Timestepping and output
-dt = 1e-3
 stop_sim_time = tStop + wFreq/100
 fh_mode = 'overwrite'
 
@@ -86,8 +87,14 @@ fh_mode = 'overwrite'
 solver.stop_sim_time = stop_sim_time
 
 # Analysis
-snapshots = solver.evaluator.add_file_handler('kv_snaps', sim_dt=wFreq, max_writes=101, mode=fh_mode)
+snapshots = solver.evaluator.add_file_handler('kv_snaps', sim_dt=wFreq, max_writes=1001, mode=fh_mode)
 snapshots.add_system(solver.state)
+snapshots.add_task("integ(p*r)", name="E[1]")
+snapshots.add_task("integ(p*r**2)", name="E[r]")
+snapshots.add_task("integ(p*r*s)", name="E[s]")
+snapshots.add_task("integ(p*r**3)", name="E[r^2]")
+snapshots.add_task("integ(p*r*s**2)", name="E[s^2]")
+snapshots.add_task("integ(p*r**2*s)", name="E[rs]")
 snapshots.add_task("p", name="p_c", layout="c")
 
 # CFL

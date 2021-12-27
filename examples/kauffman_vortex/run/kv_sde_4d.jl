@@ -11,13 +11,13 @@ with all available processors.
 =#
 
 #tinker
-nTraj = 5
+nTraj = 100000
 saveTraj = false
 saveHist = true
 packGrid = true
 dir = "../output/"
-t_prefix = dir*"4dtraj"
-h_prefix = dir*"4dtraj"
+t_prefix = dir*"noad4d"
+h_prefix = dir*"noad4d"
 
 #activate environment
 using Pkg
@@ -29,21 +29,23 @@ if "SLURM_NTASKS" in keys(ENV)
     using ClusterManagers
     addprocs(SlurmManager(parse(Int,ENV["SLURM_NTASKS"])-1))
 end
-addprocs(1)
 
 #imports
 @everywhere include("kv_sde_init.jl")
 include("kv_traj2hist.jl")
 
 #initialize storage arrays
-temp_arr = NaN*zeros(4,nTraj)#SharedArray{Float64,2}((4,nTraj); pids=[1,2])
+temp_arr = NaN*zeros(4,nTraj)
 inMemory = nTraj * nOuts < 1e5
 if inMemory
+    println("in memory")
     full_arr = NaN * zeros(4, nTraj, nOuts)
+else
+    println("not in memory")
 end
 
 #initial conditions
-@everywhere x₀ = [0.,0.]
+@everywhere x₀ = [0.2,0.]
 u₀ = fluid_vel(0, x₀...)
 ξ₀ = vcat(x₀, u₀)
 
@@ -53,13 +55,13 @@ if packGrid
 end
 
 #add randomness to initial conditions
-prob = SDEProblem(mre_det_4d!, mre_sto_4d!, ξ₀, (0.0,wFreq), save_everystep=false, save_end=false)
-ense = EnsembleProblem(prob, prob_func=rand_ic!)
-solu = solve(ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj)
+init_prob = SDEProblem(mre_det_4d!, mre_sto_4d!, ξ₀, (0.0,wFreq), save_everystep=false, save_end=false)
+init_ense = EnsembleProblem(init_prob, prob_func=rand_ic!)
+init_solu = solve(init_ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, dt=1e-5, adaptive=false)
 for i in 1:nTraj
-    temp_arr[:,i] = solu[i][1]
+    temp_arr[:,i] = init_solu[i][1]
     if inMemory
-        full_arr[:,i,1] = solu[i][1]
+        full_arr[:,i,1] = init_solu[i][1]
     end
     #save trajectories
     if saveTraj
@@ -75,7 +77,7 @@ end
 for j in 1:nOuts-1
     prob = SDEProblem(mre_det_4d!, mre_sto_4d!, ξ₀, (wFreq*(j-1),wFreq*j), save_everystep=false, save_end=true)
     ense = EnsembleProblem(prob, prob_func=renew!)
-    solu = solve(ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, tstops=[wFreq], callback=cb_set)
+    solu = solve(ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, callback=cb_set, dt=1e-5, adaptive=false)
     for i in 1:nTraj
         temp_arr[:,i] = solu[i][end]
         if inMemory
