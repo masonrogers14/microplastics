@@ -10,16 +10,15 @@ in a Kauffman vortex using Dedalus. Multiprocessing is enabled natively; use
 > mpiexec -n <# of procs> kv_fpe_2d.py
 """
 
+#imports
 import time
 import pathlib
 import logging
 import numpy as np
 from mpi4py import MPI
 from kv_param import *
-from scipy.stats import norm
 from dedalus import public as de
 from dedalus.extras import flow_tools
-
 logger = logging.getLogger(__name__)
 
 #nondimensional parameters

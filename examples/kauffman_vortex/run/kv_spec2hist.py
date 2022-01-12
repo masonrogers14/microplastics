@@ -53,7 +53,7 @@ rn = 2*np.sqrt(XC**2+YC**2)/R - 1
 ks = p_c['ks']
 Tr = p_c['Tr']
 
-#pack data files (can get grid/meta from ../traj/ode_io.jl)
+#pack data files (can get grid/meta from traj2hist)
 for t_j in time:
     p_g = xr.zeros_like(rn) #initialize time step histogram
     for Tr_j in Tr:

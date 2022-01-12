@@ -50,11 +50,11 @@ YC = np.arange((1-ny)/2*dy, ny/2*dy, dy)
 XC = xr.DataArray(data=XC, dims=['XC'], coords={'XC': XC})
 YC = xr.DataArray(data=YC, dims=['YC'], coords={'YC': YC})
 
-#normalized s (0, 2π) and r (-1, 1) for dedalus
+#interpolated polar coordinates
 s = np.mod(np.arctan2(YC,XC), 2*np.pi)
 r = np.sqrt(XC**2+YC**2)
 
-#pack data files (can get grid/meta from ../traj/ode_io.jl)
+#pack data files (can get grid/meta from traj2hist)
 for t_j in time:
     p_g_j = p_g.sel(t=t_j).interp(s=s,r=r)
     p_g_j = p_g_j.where(XC**2 + YC**2 < R**2, 0)
