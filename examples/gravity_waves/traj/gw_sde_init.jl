@@ -15,7 +15,7 @@ Pkg.activate(".")
 using DifferentialEquations, Printf, Distributed
 
 #read parameters
-io = open("gw_param.py", "r")
+io = open("../input/gw_param.py", "r")
 param_str_list = readlines(io)
 close(io)
 for param_str in param_str_list

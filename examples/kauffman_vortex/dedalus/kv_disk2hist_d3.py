@@ -13,23 +13,23 @@ and generates gridded output analogous to MITgcm output.
 in_dir = "kv_snaps/"
 in_file = in_dir+"kv_snaps_s1.h5"
 out_dir = "../output/"
-h_prefix = out_dir+"small2d"
+h_prefix = out_dir+"d32d"
 
 #imports
 import h5py
 import numpy as np
 import xarray as xr
 import xmitgcm as xm
-from kv_param import *
+from ../input/kv_param import *
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 
 #read data from HDF5 file
 with h5py.File(in_file, mode='r') as file:
-    t = file['scales']['sim_time']
-    r = file['scales']['r']['1.0']
-    s = file['scales']['s']['1.0']
-    p_g = xr.DataArray(data = file['tasks']['p'],
+    t = np.array(file['scales']['sim_time'])
+    r = np.array(file['tasks']['p'].dims[2][0][:])
+    s = np.array(file['tasks']['p'].dims[1][0][:])
+    p_g = xr.DataArray(data = np.array(file['tasks']['p'][:,:,:]),
                        dims = ['t', 's', 'r'],
                        coords = {'t': t, 's': s, 'r': r},
                        name = 'TRAC01')

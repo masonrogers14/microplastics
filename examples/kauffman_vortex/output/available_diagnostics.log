@@ -1,0 +1,5 @@
+1   |TRAC01  |1   |       |SMR     MR|1               |plastic concentration
+2   |ETAN    |  1 |       |SM      M1|m               |Surface Height Anomaly
+3   |PHIBOT  |  1 |       |SM      M1|m^2/s^2         |Bottom Pressure Pot.(p/rho) Anomaly
+4   |SALT    |1   |       |SMR     MR|psu             |Salinity
+5   |THETA   |1   |       |SMR     MR|1               |Potential Temperature

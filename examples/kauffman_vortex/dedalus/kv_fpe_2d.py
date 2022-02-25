@@ -16,7 +16,7 @@ import pathlib
 import logging
 import numpy as np
 from mpi4py import MPI
-from kv_param import *
+from ../input/kv_param import *
 from dedalus import public as de
 from dedalus.extras import flow_tools
 logger = logging.getLogger(__name__)

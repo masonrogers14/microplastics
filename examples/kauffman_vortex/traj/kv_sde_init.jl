@@ -15,7 +15,7 @@ Pkg.activate(".")
 using DifferentialEquations, Printf, Distributed
 
 #read parameters
-io = open("kv_param.py", "r")
+io = open("../input/kv_param.py", "r")
 param_str_list = readlines(io)
 close(io)
 for param_str in param_str_list
