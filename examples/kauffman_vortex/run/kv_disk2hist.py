@@ -13,7 +13,7 @@ and generates gridded output analogous to MITgcm output.
 in_dir = "kv_snaps/"
 in_file = in_dir+"kv_snaps_s1.h5"
 out_dir = "../output/"
-h_prefix = out_dir+"fine2d"
+h_prefix = out_dir+"small2d"
 
 #imports
 import h5py

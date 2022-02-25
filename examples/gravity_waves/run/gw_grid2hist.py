@@ -5,7 +5,7 @@ Created on Sat Dec 18 2021
 
 @author: Mason Rogers
 
-kv_spec2hist.py takes grid-space output from Dedalus in HDF5 format
+gw_grid2hist.py takes grid-space output from Dedalus in HDF5 format
 and generates gridded output analogous to MITgcm output.
 """
 
@@ -46,17 +46,19 @@ p_g = xr.concat([p_g, p_w], dim='x')
 nx = round(Lx/dx)
 nz = round(Lz/dz) + 2
 XC = np.arange(dx/2, nx*dx, dx)
-Z = np.arange(dz/2, -nz*dz, -dz)
+Z = np.arange(dz/2, (1-nz)*dz, -dz)
 XC = xr.DataArray(data=XC, dims=['XC'], coords={'XC': XC})
 Z = xr.DataArray(data=Z, dims=['Z'], coords={'Z': Z})
 
-#interpolated wavefield coordinates
-ζ = Z - η0*np.cos(k*XC-ω*time)
+#wavefield parameters
+k = nk*2*np.pi/Lx
+ω = np.sqrt(g*k)
 
 #pack data files (can get grid/meta from traj2hist)
 for t_j in time:
-    p_g_j = p_g.sel(t=t_j).interp(x=x,ζ=ζ)
-    p_g_j = p_g_j.where(-Lz + η0*np.cos(k*XC-ω*t_j) < Z < η0*np.cos(k*XC-ω*t_j), 0)
+    ζ = Z - η0*np.cos(k*XC-ω*t_j)
+    p_g_j = p_g.sel(t=t_j).interp(x=XC, ζ=ζ)
+    p_g_j = p_g_j.where((-Lz < ζ) & (ζ < 0), 0)
 
     xm.utils.write_to_binary(p_g_j.transpose('Z','XC').values.flatten(),
                              h_prefix+".{0:010d}".format(round(t_j/dt))+".data")

@@ -16,20 +16,19 @@ import numpy as np
 import xgcm as xg
 
 #data locations
-data_dirs = ['../output/']
-file_names = [['2dspec']]
+data_dirs = ['../output/', '../output/']
+file_names = [['small4d'], ['small2d']] #[['noad4d'], ['d32d']]
 
 #load
 tmp = {}
 nSoFar = 0
 for dir, fname in zip(data_dirs, file_names):
-    print(dir)
-    nTracs = 0
-    iters = np.arange(0,500000,5000)
-    tmp[dir] = xm.open_mdsdataset(dir, iters=iters, prefix=fname, geometry='cartesian')
-    nTracs = len(tmp[dir].data_vars)
+    print(dir) 
+    iters = np.arange(0,75000,250)
+    tmp[nSoFar] = xm.open_mdsdataset(dir, iters=iters, prefix=fname, geometry='cartesian')
+    nTracs = len(tmp[nSoFar].data_vars)
     for j in range(1, nTracs+1):
-        tmp[dir] = tmp[dir].rename({'TRAC{0:02d}'.format(j): 'TRAC{0:02d}'.format(j+nSoFar)})
+        tmp[nSoFar] = tmp[nSoFar].rename({'TRAC{0:02d}'.format(j): 'TRAC{0:02d}'.format(j+nSoFar)})
     nSoFar += nTracs
 
 #merge

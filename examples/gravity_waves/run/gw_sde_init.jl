@@ -40,6 +40,10 @@ const A = κ/ϵ/Us/Ls
 @printf "ϵ: %.6f\n" ϵ
 @printf "κ: %.6f\n" κ
 
+#dimensional parameters
+const k = nk*2π/Lx
+const ω = sqrt(g*k)
+
 #4d noise magnitude
 const α = sqrt(2*Us^3*A/Ls/ϵ)
 
@@ -66,7 +70,7 @@ function mre_det_4d!(ξ̇, ξ, q, t)
     ξ̇[1] = u
     ξ̇[2] = w
     ξ̇[3] = 3/(1+2*B)*au + (36*ν)/((1+2*B)*d^2)*(uᶠ-u)
-    ξ̇[4] = 3/(1+2*B)*aw + (36*ν)/((1+2*B)*d^2)*(wᶠ-w)
+    ξ̇[4] = 3/(1+2*B)*aw + (36*ν)/((1+2*B)*d^2)*(wᶠ-w) - (2*g*(B-1))/(1+2*B)
 end
 
 #4d stochastic terms
@@ -79,7 +83,7 @@ end
 
 #modify ensemble initial conditions
 function rand_ic!(p, i, r)
-    Σ = (401/16)*dx^2
+    Σ = Lx^2/1000
     x₁ = x₀ + sqrt(Σ)*randn(2)
     u₁ = fluid_vel(0, x₁...)
     p.u0 .= vcat(x₁, u₁)

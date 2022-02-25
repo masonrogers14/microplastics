@@ -19,7 +19,7 @@ tStop = 100.0
 wFreq = 0.25
 
 #output grid parameters
-dx = .01
+dx = 0.1
 dy = 1.0
 dz = 0.1
 dt = 1e-3

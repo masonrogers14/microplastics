@@ -8,7 +8,7 @@ Created on Fri Jul 30 2021
 
 #tinker
 write_movie = True
-mname = "../figures/1222_fine_spec.mp4"
+mname = "../figures/0207_small.mp4"
 
 #imports
 import numpy as np

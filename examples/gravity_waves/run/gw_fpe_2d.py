@@ -31,9 +31,9 @@ k = nk*2*np.pi/Lx
 ω = np.sqrt(g*k)
 
 # Create bases and domain
-x_basis = de.Fourier('x', 64, interval=(0, Lx), dealias=3/2)
-ζ1_basis = de.Chebyshev('ζ1', 32, interval=(-Lz, -Lz/4), dealias=3/2)
-ζ2_basis = de.Chebyshev('ζ2', 32, interval=(-Lz/4, 0), dealias=3/2)
+x_basis = de.Fourier('x', 128, interval=(0, Lx), dealias=3/2)
+ζ1_basis = de.Chebyshev('ζ1', 64, interval=(-Lz, -Lz/4), dealias=3/2)
+ζ2_basis = de.Chebyshev('ζ2', 64, interval=(-Lz/4, 0), dealias=3/2)
 ζ_basis = de.Compound('ζ', (ζ1_basis, ζ2_basis))
 # ζ_basis = de.Laguerre('ζ', 1024, edge=0, stretch=-1, dealias=3/2)
 domain = de.Domain([x_basis, ζ_basis], grid_dtype=np.float64)
@@ -84,20 +84,20 @@ p = solver.state['p']
 px = solver.state['px']
 pz = solver.state['pz']
 M = Lx**2/1000
-p['g'] = (2*np.pi*M)**-1 * np.exp(-((x-Lx/2)**2+(ζ+Lz/4)**2)/(2*M))
+p['g'] = (2*np.pi*M)**-1 * np.exp(-((x-Lx/2)**2+(ζ+Lz/4-η0)**2)/(2*M))
 p.differentiate('x', out=px)
 p.differentiate('ζ', out=pz)
 
 # Timestepping and output
 dt = 1e-3
-stop_sim_time = 1.01
+stop_sim_time = tStop + wFreq/100
 fh_mode = 'overwrite'
 
 # Integration parameters
 solver.stop_sim_time = stop_sim_time
 
 # Analysis
-snapshots = solver.evaluator.add_file_handler('gw_snaps', sim_dt=.1, max_writes=101, mode=fh_mode)
+snapshots = solver.evaluator.add_file_handler('gw_snaps', sim_dt=wFreq, max_writes=1001, mode=fh_mode)
 snapshots.add_system(solver.state)
 snapshots.add_task("integ(p)", name="E[1]")
 snapshots.add_task("integ(p*x)", name="E[x]")
@@ -113,8 +113,8 @@ try:
     while solver.proceed:
         dt = CFL.compute_dt()
         dt = solver.step(dt)
-        if (solver.iteration-1) % 10 == 0:
-            if np.max(np.abs(solver.state['p']['g'])) > 1000: raise
+        if (solver.iteration-1) % 1000 == 0:
+            assert np.max(np.abs(solver.state['p']['g']), initial=0) < 1000
             logger.info('Iteration: %i, Time: %e, dt: %e' %(solver.iteration, solver.sim_time, dt))
 except:
     logger.error('Exception raised, triggering end of main loop.')

@@ -45,7 +45,7 @@ else
 end
 
 #initial conditions
-@everywhere x₀ = [Lx/2, 3*Lz/4]
+@everywhere x₀ = [Lx/2, -Lz/4]
 u₀ = fluid_vel(0, x₀...)
 ξ₀ = vcat(x₀, u₀)
 
@@ -57,7 +57,7 @@ end
 #add randomness to initial conditions
 init_prob = SDEProblem(mre_det_4d!, mre_sto_4d!, ξ₀, (0.0,wFreq), save_everystep=false, save_end=false)
 init_ense = EnsembleProblem(init_prob, prob_func=rand_ic!)
-init_solu = solve(init_ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, dt=1e-5, adaptive=false)
+init_solu = solve(init_ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, dt=1e-3, adaptive=false)
 for i in 1:nTraj
     temp_arr[:,i] = init_solu[i][1]
     if inMemory
@@ -77,7 +77,7 @@ end
 for j in 1:nOuts-1
     prob = SDEProblem(mre_det_4d!, mre_sto_4d!, ξ₀, (wFreq*(j-1),wFreq*j), save_everystep=false, save_end=true)
     ense = EnsembleProblem(prob, prob_func=renew!)
-    solu = solve(ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, callback=cb_set, dt=1e-5, adaptive=false)
+    solu = solve(ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, callback=cb_set, dt=1e-3, adaptive=false)
     for i in 1:nTraj
         temp_arr[:,i] = solu[i][end]
         if inMemory
