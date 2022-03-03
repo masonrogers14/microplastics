@@ -1,6 +1,14 @@
 *.meta
 *.data
 *.bin
+*.log
 *.h5
 *.toml
 local*
+exec*
+stderr
+stdout
+*.mp4
+*.png
+julia*
+__pycache__
