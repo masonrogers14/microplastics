@@ -16,15 +16,16 @@ import numpy as np
 import xgcm as xg
 
 #data locations
-data_dirs = ['../output/', '../output/']
-file_names = [['small4d'], ['small2d']] #[['noad4d'], ['d32d']]
+#data_dirs = ['../output/', '../output/']
+#file_names = [['2dspec'], ['4dtraj']] #[['small4d'], ['small2d']] #[['noad4d'], ['d32d']]
+data_dirs = ['../output/']; file_names = [['gamma35']]
 
 #load
 tmp = {}
 nSoFar = 0
 for dir, fname in zip(data_dirs, file_names):
     print(dir) 
-    iters = np.arange(0,75000,250)
+    iters = np.arange(0,2000000,1000)
     tmp[nSoFar] = xm.open_mdsdataset(dir, iters=iters, prefix=fname, geometry='cartesian')
     nTracs = len(tmp[nSoFar].data_vars)
     for j in range(1, nTracs+1):
@@ -35,6 +36,7 @@ for dir, fname in zip(data_dirs, file_names):
 ds = xr.combine_by_coords(tmp.values(), compat='override', combine_attrs='drop')
 
 #edit grid
+ds['time'] = ds['time'] / np.timedelta64(1,'s') / 1000
 ds.coords['drCl'] = xr.DataArray(data=ds['drC'].values[:-1],
                                  coords={'Zl': ds['Zl'].values},
                                  dims='Zl')

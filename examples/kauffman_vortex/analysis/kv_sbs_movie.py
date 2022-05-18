@@ -8,7 +8,7 @@ Created on Fri Jul 30 2021
 
 #tinker
 write_movie = True
-mname = "../figures/0208_short.mp4"
+mname = "../figures/0304_fixedIC.mp4"
 
 #imports
 import numpy as np
@@ -62,8 +62,8 @@ def initialize_plots():
 
     #titles
     f_p.suptitle("Microplastics in Kaufmann vortex", fontsize=bfs+2)
-    a_p[0].set_title("Monte Carlo", fontsize=bfs)
-    a_p[1].set_title("Simplified", fontsize=bfs)
+    a_p[0].set_title("MITgcm", fontsize=bfs)
+    a_p[1].set_title("Dedalus", fontsize=bfs)
     a_p[2].set_title("Difference", fontsize=bfs)
 
     #ticks

@@ -84,7 +84,8 @@ end
 
 #modify ensemble initial conditions
 function rand_ic!(p, i, r)
-    Σ = (401/16)*dx^2
+    #Σ = (401/16)*dx^2
+    Σ = .001/2 
     x₁ = x₀ + sqrt(Σ)*randn(2)
     u₁ = fluid_vel(0, x₁...)
     p.u0 .= vcat(x₁, u₁)
@@ -110,10 +111,10 @@ function out_of_domain(ξ,t,integrator)
 end
 #particle reflects off boundary
 function reflect!(integrator)
-    x, y, u, v = integrator.u
-    sn = (u*x + v*y)/sqrt(x^2 + y^2)
-    integrator.u[3] -= 2*sn*x/sqrt(x^2+y^2)
-    integrator.u[4] -= 2*sn*y/sqrt(x^2+y^2)
+    #x, y, u, v = integrator.u
+    #sn = (u*x + v*y)/sqrt(x^2 + y^2)
+    #integrator.u[3] -= 2*sn*x/sqrt(x^2+y^2)
+    #integrator.u[4] -= 2*sn*y/sqrt(x^2+y^2)
 end
 cb_out = ContinuousCallback(out_of_domain, reflect!, save_positions=(false,false))
 

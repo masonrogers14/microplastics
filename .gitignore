@@ -1,6 +1,8 @@
 *.meta
 *.data
 *.bin
+STD*
+*.log
 *.h5
 *.toml
 local*

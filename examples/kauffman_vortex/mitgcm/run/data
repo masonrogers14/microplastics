@@ -1,0 +1,48 @@
+# ====================
+# | Model parameters |
+# ====================
+#
+# Continuous equation parameters
+ &PARM01
+ implicitDiffusion=.TRUE.,
+ globalFiles=.TRUE.,
+ useSingleCpuIO=.TRUE.,
+ &
+
+# Elliptic solver parameters
+&PARM02
+ &
+
+# Time stepping parameters
+ &PARM03
+ nIter0=0,
+#endTime=43200.,
+ nTimeSteps=100000,
+ deltaT=1.0e-3,
+ deltaTtracer=1.0e-3,
+ deltaTClock=1.0e-3,
+ abEps=0.1,
+ pChkptFreq=400.0,
+ chkptFreq=400.0,
+ dumpFreq=200.0,
+ monitorFreq=1.0,
+ monitorSelect=1,
+ periodicExternalForcing=.TRUE.,
+ externForcingPeriod=1.0e-3,
+ externForcingCycle=1.0e-3,
+ &
+
+# Gridding parameters
+ &PARM04
+ usingCartesianGrid=.TRUE.,
+ dXspacing=0.01,
+ dYspacing=0.01,
+ xgOrigin=-.52,
+ ygOrigin=-.52,
+ delZ=1*1.0,
+ &
+
+# Input datasets
+ &PARM05 
+ bathyFile = 'top.bin',
+ &
