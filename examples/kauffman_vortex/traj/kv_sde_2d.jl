@@ -5,7 +5,7 @@ Created on Tue Dec 7 2021
 
 @author Mason Rogers
 
-kv_sde_4d.jl is the parent script for a simulation of an ensemble of particles
+kv_sde_2d.jl is the parent script for a simulation of an ensemble of particles
 in a Kauffman vortex. Running via SLURM automatically enables multiprocessing
 with all available processors.
 =#
@@ -16,8 +16,8 @@ saveTraj = false
 saveHist = true
 packGrid = true
 dir = "../output/exp1/"
-t_prefix = dir*"julia4dx"
-h_prefix = dir*"julia4dx"
+t_prefix = dir*"julia2dx"
+h_prefix = dir*"julia2dx"
 initTime = 0.0001
 
 #activate environment
@@ -38,11 +38,11 @@ end
 include("kv_traj2hist.jl")
 
 #initialize storage arrays
-temp_arr = NaN*zeros(4,nTraj)
+temp_arr = NaN*zeros(2,nTraj)
 inMemory = nTraj * nOuts < 1e9
 if inMemory
     println("in memory")
-    full_arr = NaN * zeros(4, nTraj, nOuts)
+    full_arr = NaN * zeros(2, nTraj, nOuts)
 else
     println("not in memory")
 end
@@ -57,11 +57,10 @@ println("setting initial conditions")
 if initTime == 0
     #initial conditions
     @everywhere x₀ = [x0,y0] #supplied in kv_param.py
-    u₀ = fluid_vel(0, x₀...)
-    ξ₀ = vcat(x₀, u₀)
+    ξ₀ = x₀
     
-    init_prob = SDEProblem(mre_det_4d!, mre_sto_4d!, ξ₀, (0.0,wFreq), save_everystep=false, save_end=false)
-    init_ense = EnsembleProblem(init_prob, prob_func=rand_ic_4d!)
+    init_prob = SDEProblem(mre_det_2d!, mre_sto_2d!, ξ₀, (0.0,wFreq), save_everystep=false, save_end=false)
+    init_ense = EnsembleProblem(init_prob, prob_func=rand_ic_2d!)
     init_solu = solve(init_ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, dt=5e-4, adaptive=false)
     for i in 1:nTraj
 	temp_arr[:,i] = init_solu[i][1]
@@ -90,7 +89,7 @@ end
 #run solver (either in memory or in chunks of wFreq)
 println("running")
 if inMemory
-    prob = SDEProblem(mre_det_4d!, mre_sto_4d!, zeros(4), (0, wFreq*(nOuts-1)), saveat=0:wFreq:wFreq*(nOuts-1))
+    prob = SDEProblem(mre_det_2d!, mre_sto_2d!, zeros(2), (0, wFreq*(nOuts-1)), saveat=0:wFreq:wFreq*(nOuts-1))
     ense = EnsembleProblem(prob, prob_func=renew!)
     solu = solve(ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, callback=cb_set, dt=5e-4, adaptive=false)
     for i in 1:nTraj
@@ -109,7 +108,7 @@ if inMemory
     end
 else 
     for j in 1:nOuts-1
-        prob = SDEProblem(mre_det_4d!, mre_sto_4d!, zeros(4), (wFreq*(j-1),wFreq*j), save_everystep=false, save_end=true)
+        prob = SDEProblem(mre_det_2d!, mre_sto_2d!, zeros(2), (wFreq*(j-1),wFreq*j), save_everystep=false, save_end=true)
         ense = EnsembleProblem(prob, prob_func=renew!)
         solu = solve(ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, callback=cb_set, dt=5e-4, adaptive=false)
         for i in 1:nTraj

@@ -8,7 +8,7 @@ Created on Fri Jul 30 2021
 
 #tinker
 write_movie = True
-mname = "../figures/0304_fixedIC.mp4"
+mname = "../figures/0825_comp.mp4"
 
 #imports
 import numpy as np
@@ -22,9 +22,9 @@ from matplotlib.colors import LogNorm, to_rgba, ListedColormap
 θ = xr.DataArray(data=np.linspace(0,2*np.pi,endpoint=True),
                  dims=['θ'],
                  coords={'θ': np.linspace(0,2*np.pi,endpoint=True)})
-r = xr.DataArray(data=np.linspace(0,0.5,endpoint=False),
+r = xr.DataArray(data=np.linspace(0,5.0,endpoint=False),
                  dims=['r'],
-                 coords={'r': np.linspace(0,0.5,endpoint=False)})
+                 coords={'r': np.linspace(0,5.0,endpoint=False)})
 p = ds.sum(dim='Z').interp(XC=r*np.cos(θ), YC=r*np.sin(θ))
 v = np.maximum(p['TRAC01'].max().values, p['TRAC02'].max().values)
 #cnorm = LogNorm(v*1e-4,v)
