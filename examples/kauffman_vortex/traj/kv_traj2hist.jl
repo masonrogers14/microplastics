@@ -31,20 +31,21 @@ const flip_last = false
 
 #save trajectories
 function save_trajectories(j::Int64)
-	t_suffix = @sprintf ".%010d.bin" Int(round(wFreq*j/dt))
-	io = open(t_prefix*t_suffix, "w")
-	write(io, temp_arr)
-	close(io)
+    t_suffix = @sprintf ".%010d.bin" Int(round((wFreq*j+initTime) / dt))
+    io = open(t_prefix*t_suffix, "w")
+    write(io, temp_arr)
+    close(io)
 end
 
 #compute and save histogram data in MITgcm format
 function save_histogram(j::Int64)
     v = .~ isnan.(temp_arr[1,:])
-    h_j = fit(Histogram, ([temp_arr[i,v] for i in 1:size(temp_arr)[1]÷2]...,), edges).weights
+    l = size(temp_arr)[1]%3==0 ? 3 : 2
+    h_j = fit(Histogram, ([temp_arr[i,v] for i in 1:l]...,), edges).weights
     if flip_last
         h_j = reverse(h_j, dims=length(size(h_j)))
 	end
-    h_suffix = @sprintf ".%010d.data" Int(round(wFreq*j/dt))
+    h_suffix = @sprintf ".%010d.data" Int(round((wFreq*j+initTime) / dt))
     io = open(h_prefix*h_suffix, "w")
     write(io, hton.(convert(Array{Float32,2}, h_j/(vol*nTraj))))
     close(io)
@@ -245,7 +246,7 @@ function pack_grid()
     close(io)
 
     for j in 1:nOuts
-        nt = Int(round(wFreq*(j-1)/dt))
+        nt = Int(round((wFreq*(j-1)+initTime) / dt))
         h_suffix = @sprintf ".%010d.meta" nt
         io = open(h_prefix*h_suffix, "w")
         write(io, @sprintf "nDims = [3]; \ndimList = [\n  %d, 1, %d,\n  %d, 1, %d,\n  %d, 1, %d \n]; \ndataprec = ['float32']; \nnrecords = [1]; \ntimeStepNumber = [0]; \ntimeInterval = [%.8e]; \nnFlds = [1]; \nfldList = { \n'TRAC01  ' \n};" nx nx ny ny nz nz nt*dt)

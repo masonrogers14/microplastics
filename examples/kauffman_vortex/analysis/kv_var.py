@@ -27,7 +27,6 @@ Created on Tue May 17 2022
 
 #tinker
 saveFigures = True
-fname = '../figures/0517_v.png'
 
 #imports
 import numpy as np
@@ -58,8 +57,8 @@ s = 4*κ
 Σo = xr.DataArray(np.zeros((t.size, nTracs)), dims=['time', 'n'],
                   coords={'n': np.arange(1, nTracs+1), 'time': t})
 for j in range(1, nTracs+1):
-    EX2 = moms['TRAC{0:02d}'.format(j)]['Σ_XC_XC']
-    EY2 = moms['TRAC{0:02d}'.format(j)]['Σ_YC_YC']
+    EX2 = moms['TRAC{0:02d}'.format(j)]['Σ_XC_XC'] + moms['TRAC{0:02d}'.format(j)]['μ_XC']**2 
+    EY2 = moms['TRAC{0:02d}'.format(j)]['Σ_YC_YC'] + moms['TRAC{0:02d}'.format(j)]['μ_YC']**2
     Σo.loc[{'n': j}] = EX2 + EY2
 
 #predicted timeseries for large and small Σ limits
@@ -71,7 +70,7 @@ def Σp_small(Σ0):
 #compute p-in-target timeseries
 P = xr.DataArray(np.zeros((t.size, nTracs, 5)), dims=['time', 'n', 'm'],
                  coords={'n': np.arange(1, nTracs+1), 'time': t,
-                         'm': np.array([0.25, 0.5, 1.0, 2, np.inf])})
+                         'm': np.array([16, 64, 144, 256, 400])})
 R2 = ds['XC']**2 + ds['YC']**2
 mask = R2 < np.minimum(R**2, P['m']*a**2) 
 vol = ds['rA'] * ds['drF'] * ds['maskC']
@@ -134,7 +133,7 @@ def tidy_up_plots():
     #save
     if saveFigures:
         today = np.datetime64('today').item()
-        todayStr = '{0:02d}{1:02d}_'.format(today.month, today.day)
+        todayStr = '{0:02d}{1:02d}'.format(today.month, today.day)
         plt.figure(f_var.number)
         plt.savefig('../figures/'+todayStr+'_v.png')
         plt.figure(f_pin.number)

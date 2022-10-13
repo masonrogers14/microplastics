@@ -14,8 +14,9 @@ using Pkg
 Pkg.activate(".")
 using DifferentialEquations, Printf, Distributed
 
+##########   PARAMETERS   ############################################
 #read parameters
-io = open("../input/kv_param.py", "r")
+io = open("kv_param.py", "r")
 param_str_list = readlines(io)
 close(io)
 for param_str in param_str_list
@@ -43,6 +44,7 @@ const A = κ/ϵ/Us/Ls
 #4d noise magnitude
 const α = sqrt(2*Us^3*A/Ls/ϵ)
 
+##########   FLUID DYNAMICS   ########################################
 #fluid velocities
 function fluid_vel(t, x, y)
     ρ = sqrt(x^2 + y^2)
@@ -63,6 +65,16 @@ function fluid_acc(t, x, y)
     return [au, av]
 end
 
+#2d particle velocity
+function parti_vel(t, x, y)
+    uᶠ, vᶠ = fluid_vel(t, x, y)
+    au, av = fluid_acc(t, x, y)
+    u = uᶠ + 2*(ϵ*Ls/Us)*(1-B)/(1+2*B)*au
+    v = vᶠ + 2*(ϵ*Ls/Us)*(1-B)/(1+2*B)*av
+    return [u, v]
+end
+
+##########   DIFFERENTIAL EQUATIONS   ################################
 #4d deterministic equations
 function mre_det_4d!(ξ̇, ξ, q, t)
     x, y, u, v = ξ
@@ -70,8 +82,8 @@ function mre_det_4d!(ξ̇, ξ, q, t)
     au, av = fluid_acc(t, x, y)
     ξ̇[1] = u
     ξ̇[2] = v
-    ξ̇[3] = 3/(1+2*B)*au + (36*ν)/((1+2*B)*d^2)*(uᶠ-u)
-    ξ̇[4] = 3/(1+2*B)*av + (36*ν)/((1+2*B)*d^2)*(vᶠ-v)
+    ξ̇[3] = 3/(1+2*B)*au + (Ls/(Us*ϵ))*(uᶠ-u)
+    ξ̇[4] = 3/(1+2*B)*av + (Ls/(Us*ϵ))*(vᶠ-v)
 end
 
 #4d stochastic terms
@@ -82,13 +94,32 @@ function mre_sto_4d!(ξ̇, ξ, q, t)
     ξ̇[4] = α
 end
 
-#modify ensemble initial conditions
-function rand_ic!(p, i, r)
-    #Σ = (401/16)*dx^2
-    Σ = .001/2 
+#2d deterministic equations
+function mre_det_2d!(ξ̇, ξ, q, t)
+    x, y = ξ
+    u, v = parti_vel(t, x, y)
+    ξ̇[1] = u
+    ξ̇[2] = v
+end
+
+#2d stochastic terms
+function mre_sto_2d!(ξ̇, ξ, q, t)
+    ξ̇[1] = sqrt(2*κ)
+    ξ̇[2] = sqrt(2*κ)
+end
+
+##########   INITIAL AND BOUNDARY CONDITIONS   ########################
+#4d random ensemble initial conditions
+function rand_ic_4d!(p, i, r)
     x₁ = x₀ + sqrt(Σ)*randn(2)
     u₁ = fluid_vel(0, x₁...)
     p.u0 .= vcat(x₁, u₁)
+    return p
+end
+
+function rand_ic_2d!(p, i, r)
+    x₁ = x₀ + sqrt(Σ)*randn(2)
+    p.u0 .= x₁
     return p
 end
 
@@ -104,11 +135,11 @@ function renew!(p, i, r)
 end
 
 #particle exits domain event
-function out_of_domain(ξ,t,integrator)
-    x, y, u, v = ξ
-    ρ = sqrt(x^2+y^2)
+function out_of_domain(ξ, t, integrator)
+    ρ = sqrt(ξ[1]^2+ξ[2]^2)
     return ρ-R
 end
+
 #particle reflects off boundary
 function reflect!(integrator)
     #x, y, u, v = integrator.u
@@ -120,22 +151,3 @@ cb_out = ContinuousCallback(out_of_domain, reflect!, save_positions=(false,false
 
 #package callbacks
 cb_set = CallbackSet(cb_out)
-
-#= XXXX
-#2d particle velocity
-#To do: implement function parti_vel(t, x, y)
-
-#2d deterministic equations
-function mre_det_2d!(ξ̇, ξ, q, t)
-    x, y = ξ
-    u, v = parti_vel(t, x, y)
-    ξ̇[1] = u
-    ξ̇[2] = v
-end
-
-#2d stochastic terms
-function mre_sto_2d!(ξ̇, ξ, q, t)
-    ξ̇[1] = sqrt(2*κ)
-    ξ̇[2] = sqrt(2*κ)
-end
-=#
