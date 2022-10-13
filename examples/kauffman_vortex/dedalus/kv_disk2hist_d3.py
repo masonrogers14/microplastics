@@ -10,17 +10,17 @@ and generates gridded output analogous to MITgcm output.
 """
 
 #tinker
-in_dir = "kv_snaps/"
-in_file = in_dir+"kv_snaps_s1.h5"
-out_dir = "../output/"
-h_prefix = out_dir+"d32d"
+in_dir = "kv_snaps_exp1_mpi_mod2/"
+in_file = in_dir+"kv_snaps_exp1_mpi_mod2_s1.h5"
+out_dir = "../output/exp1/"
+h_prefix = out_dir+"dedalus2d"
 
 #imports
 import h5py
 import numpy as np
 import xarray as xr
 import xmitgcm as xm
-from ../input/kv_param import *
+from kv_param import *
 import matplotlib.pyplot as plt
 from matplotlib.colors import LogNorm
 

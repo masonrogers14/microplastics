@@ -25,11 +25,11 @@ logger = logging.getLogger(__name__)
 ϵ = ((1+2*B)*d**2*Us)/(36*ν*Ls) #should be small
 
 # Parameters
-Ns, Nr = 8, 256 
+Ns, Nr = 32, 128 
 dealias = 3/2
 stop_sim_time = tStop + wFreq/100
 timestepper = d3.RK443
-timestep = 5e-5 
+timestep = 1e-4
 dtype = np.float64
 
 # Bases
@@ -41,8 +41,12 @@ edge = disk.S1_basis()
 
 # Fields
 p = dist.Field(name='p', bases=disk)
+pr = dist.Field(name='pr', bases=disk)
 tau_p = dist.Field(name='tau_p', bases=edge)
-ad = dist.VectorField(coords, name='ad', bases=disk)
+rHat = dist.VectorField(coords, name='rHat', bases=disk)
+rHat['g'][0] = 0
+rHat['g'][1] = 1
+ad = dist.VectorField(coords, bases=disk)
 ad['g'][0] = Γ/2/np.pi/(r**2+a**2) * r
 ad['g'][1] = -(Γ/2/np.pi/(r**2+a**2))**2 * r * (ϵ*Ls/Us) * 2*(1-B) / (1+2*B)
 
@@ -52,19 +56,23 @@ lift = lambda A, n: d3.Lift(A, disk, n)
 
 # Problem
 del(dt)
-problem = d3.IVP([p, tau_p], namespace=locals())
+problem = d3.IVP([p, tau_p, pr], namespace=locals())
 problem.add_equation("dt(p) - κ*lap(p) + lift(tau_p,-1) = -div(p*ad)")
-problem.add_equation("radial(κ*grad(p)(r=R)) = radial(p(r=R)*ad(r=R))")
+problem.add_equation("pr = dot(rHat, grad(p))")
+problem.add_equation("p(r=R) + κ*pr(r=R) = p(r=R) + (dot(rHat, ad)*p)(r=R)")
 
 # Solver
 solver = problem.build_solver(timestepper)
 solver.stop_sim_time = stop_sim_time
 
 # Initial conditions
+#Σ = .01 (supplied by kv_param.py)
+#x0 = 4*a (supplied by kv_param.py)
+#y0 = 0.0 (supplied by kv_param.py)
 p['g'] = 1/(2*np.pi*Σ) * np.exp(-(r**2 - 2*r*(x0*np.cos(s)+y0*np.sin(s)) + x0**2+y0**2)/(2*Σ))
 
 # Analysis
-snapshots = solver.evaluator.add_file_handler('kv_snaps_exp1_mpi_mod2', sim_dt=wFreq, max_writes=1000)
+snapshots = solver.evaluator.add_file_handler('kv_snaps_exp1_mpi', sim_dt=wFreq, max_writes=1000)
 snapshots.add_tasks(solver.state)
 
 # Flow properties
