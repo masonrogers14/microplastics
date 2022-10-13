@@ -27,5 +27,5 @@ echo '==================================================='
 module add engaging/intel/2013.1.046
 
 SECONDS=0
-mpirun -n 16 ./mitgcmuv
+mpirun -n 16 ./mitgcmuv_1004_16y
 echo "Completed in $SECONDS seconds"

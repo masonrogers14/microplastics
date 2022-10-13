@@ -83,15 +83,5 @@ C   is still useful with, e.g., single-domain curvilinear configurations.
 C o Execution environment support options
 #include "CPP_EEOPTIONS.h"
 
-C o Include/exclude code specific to the ECCO/SEALION version.
-C   AUTODIFF or EXF package.
-C   Currently controled by a single header file
-C   For this to work, PACKAGES_CONFIG.h needs to be included!
-cph#if (defined (ALLOW_AUTODIFF) || \
-cph     defined (ALLOW_ECCO) || \
-cph     defined (ALLOW_EXF))
-cph# include "ECCO_CPPOPTIONS.h"
-cph#endif
-
 #endif /* CPP_OPTIONS_H */
 

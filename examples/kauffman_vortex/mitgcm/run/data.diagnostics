@@ -42,8 +42,8 @@
   frequency(4) = -9999,
   timePhase(4) = 0.00,
   fields(1,5)  = 'TRAC01'
-  fileName(5) = 'tfast',
-  frequency(5) = -0.25,
+  fileName(5) = 'mitgcm2d',
+  frequency(5) = -1.0,
   timePhase(5) = 0.00,
  &
 

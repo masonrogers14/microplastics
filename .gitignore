@@ -13,3 +13,4 @@ stdout
 *.png
 julia*
 __pycache__
+output

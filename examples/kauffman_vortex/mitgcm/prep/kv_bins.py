@@ -13,14 +13,14 @@ import matplotlib.pyplot as plt
 from kv_param import *
 
 #parameters
-ϵ = ϵ = ((1+2*B)*d**2*Us)/(36*ν*Ls)
+ϵ = ((1+2*B)*d**2*Us)/(36*ν*Ls)
 
 #assemble grids
-nx = int(np.round(1/dx)) + 4
-ny = int(np.round(1/dy)) + 4
+nx = int(np.round(2*R/dx)) + 4
+ny = int(np.round(2*R/dy)) + 4
 nz = 1
-XG = np.arange(-nx*dx/2,nx*dx/2,dx); XC = XG + dx/2
-YG = np.arange(-ny*dy/2,ny*dy/2,dy); YC = YG + dx/2
+XG = np.arange(-nx*dx/2,(nx-1)*dx/2,dx); XC = XG + dx/2
+YG = np.arange(-ny*dy/2,(ny-1)*dy/2,dy); YC = YG + dx/2
 Zl = np.arange(dz*nz,0,-dz); Z = Zl - dz/2
 uz, uy, ux = np.meshgrid(Z,YC,XG,indexing='ij')
 vz, vy, vx = np.meshgrid(Z,YG,XC,indexing='ij')
@@ -31,7 +31,6 @@ wr = np.sqrt(wx**2 + wy**2)
 
 #initial probability parameters
 vol = dx*dy*dz
-Σ = (401/16) * dx**2
 mx = np.round(4*Σ/dx**2)
 my = np.round(4*Σ/dy**2)
 mz = np.round(4*Σ/dz**2)
@@ -101,16 +100,15 @@ with open("../run/top.bin", "w") as top:
     d = (land - 1)[0,:,:] * dz*nz
     d.astype('>f4').tofile(top)
 
-#write initial conditions
+#write initial conditions (now supplied in kv_param.py)
 with open("../run/p_init.bin", "w") as p_init:
-    x0 = 0.20
-    y0 = 0.00
-    #px = binom.pmf(np.floor((XC-x0)/dx),mx,0.5,loc=-mx//2)
-    #py = binom.pmf(np.floor((YC-y0)/dy),my,0.5,loc=-my//2)
+    #px = binom.pmf(np.round((XC-x0)/dx),mx,0.5,loc=-mx//2)
+    #py = binom.pmf(np.round((YC-y0)/dy),my,0.5,loc=-my//2)
     px = norm.pdf(XC, loc=x0, scale=np.sqrt(Σ)) * dx
     py = norm.pdf(YC, loc=y0, scale=np.sqrt(Σ)) * dy 
     pz = np.ones(1)
     p = np.prod(np.stack(np.meshgrid(pz,py,px,indexing='ij')),0) / vol
     #p = (np.sqrt((wx-x0)**2 + (wy-y0)**2 + (uz-z0)**2) < .05)# * (np.abs(wy-y0) < (dy/4))
     #p = p/np.sum(p)/vol
+    p[land] = 0
     p.astype('>f4').tofile(p_init)
