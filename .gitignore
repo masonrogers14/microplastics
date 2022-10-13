@@ -1,6 +1,7 @@
 *.meta
 *.data
 *.bin
+STD*
 *.log
 *.h5
 *.toml
@@ -12,3 +13,4 @@ stdout
 *.png
 julia*
 __pycache__
+output

@@ -8,7 +8,7 @@ Created on Fri Jul 30 2021
 
 #tinker
 write_movie = True
-mname = "../figures/1012_mitgcm.mp4"
+mname = "../figures/0114_test.mp4"
 
 #imports
 import numpy as np
@@ -20,21 +20,13 @@ from matplotlib.colors import LogNorm, to_rgba, ListedColormap
 
 #define plot variable
 nTracs = 1
-
-#polar coordinates
-θ = xr.DataArray(data=np.linspace(0,2*np.pi,endpoint=True),
-                 dims=['θ'],
-                 coords={'θ': np.linspace(0,2*np.pi,endpoint=True)})
-r = xr.DataArray(data=np.linspace(0,5.0,endpoint=False),
-                 dims=['r'],
-                 coords={'r': np.linspace(0,5.0,endpoint=False)})
-p = ds.sum(dim='Z').interp(XC=r*np.cos(θ), YC=r*np.sin(θ))
+p = ds.sum(dim='YC')
 v = np.max(np.array([p['TRAC0'+str(i)].max().values for i in range(1, nTracs+1)])) 
 #cnorm = LogNorm(v*1e-4,v)
 print(v)
 
 #transpose for pyplot
-p = p.transpose('r','θ',...)
+p = p.transpose('Z','XC',...)
 
 
 
@@ -54,14 +46,14 @@ def initialize_plots():
     #declare plots
     f_p = plt.figure(figsize=(10,7), constrained_layout=True)
     g_p = f_p.add_gridspec(1,1)
-    a_p = f_p.add_subplot(g_p[0,0], projection='polar')
+    a_p = f_p.add_subplot(g_p[0,0])
 
     #label axes
-    a_p.set_rlabel_position(0)
-    a_p.text(0,0.25,r"$r$", fontsize=bfs, va='top', ha='center')
+    a_p.set_xlabel(r'$x$')
+    a_p.set_ylabel(r'$z$')
 
     #titles
-    a_p.set_title("Microplastics in Kaufmann vortex", fontsize=bfs+2)
+    a_p.set_title("Microplastics in gravity waves", fontsize=bfs+2)
 
     #prepare to store plots for legends
     p_p = [None] * nTracs
@@ -86,7 +78,7 @@ def tidy_up_plots():
     plt.colorbar(p_p[0], ax=a_p, label=r"$p$ [1/unit$^2$]")    
 
     #grid
-    a_p.grid(axis='y', alpha=0.4)
+    a_p.grid(axis='both', alpha=0.4)
 
 def makemovie(i):
     for j in range(nTracs):
@@ -100,7 +92,7 @@ if __name__ == "__main__":
     try:
         initialize_plots()
         for i in range(nTracs-1,-1,-1):
-            p_p[i] = a_p.pcolormesh(θ, r, p['TRAC0'+str(i+1)].isel(time=0),
+            p_p[i] = a_p.pcolormesh(p.XC, p.Z, p['TRAC0'+str(i+1)].isel(time=0),
                                     cmap=cmaps[i], shading='gouraud', vmin=0, vmax=v,  animated=True)
         tidy_up_plots()
 

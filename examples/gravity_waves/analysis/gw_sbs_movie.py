@@ -8,7 +8,7 @@ Created on Fri Jul 30 2021
 
 #tinker
 write_movie = True
-mname = "../figures/0825_comp.mp4"
+mname = "../figures/0208_gw.mp4"
 
 #imports
 import numpy as np
@@ -18,20 +18,15 @@ import matplotlib.animation as movie
 from read_MITgcm import ds
 from matplotlib.colors import LogNorm, to_rgba, ListedColormap
 
-#polar coordinates
-θ = xr.DataArray(data=np.linspace(0,2*np.pi,endpoint=True),
-                 dims=['θ'],
-                 coords={'θ': np.linspace(0,2*np.pi,endpoint=True)})
-r = xr.DataArray(data=np.linspace(0,5.0,endpoint=False),
-                 dims=['r'],
-                 coords={'r': np.linspace(0,5.0,endpoint=False)})
-p = ds.sum(dim='Z').interp(XC=r*np.cos(θ), YC=r*np.sin(θ))
+#define plot variable
+
+p = ds.sum(dim='YC')
 v = np.maximum(p['TRAC01'].max().values, p['TRAC02'].max().values)
 #cnorm = LogNorm(v*1e-4,v)
 print(v)
 
 #transpose for pyplot
-p = p.transpose('r','θ',...)
+p = p.transpose('Z','XC',...)
 
 #break out plotting variables
 p1 = p['TRAC01']
@@ -54,16 +49,16 @@ def initialize_plots():
     #declare plots
     f_p = plt.figure(figsize=(10,4), constrained_layout=True)
     g_p = f_p.add_gridspec(1,3)
-    a_p = np.array([f_p.add_subplot(g_p[0,i], projection='polar') for i in range(3)])
+    a_p = np.array([f_p.add_subplot(g_p[0,i]) for i in range(3)])
 
     #label axes
-    for a in a_p: a.set_rlabel_position(0)
-    for a in a_p: a.text(0,0.25,r"$r$", fontsize=bfs, va='top', ha='center')
+    for a in a_p: a.set_xlabel(r'$x$')
+    for a in a_p: a.set_ylabel(r'$z$')
 
     #titles
-    f_p.suptitle("Microplastics in Kaufmann vortex", fontsize=bfs+2)
-    a_p[0].set_title("MITgcm", fontsize=bfs)
-    a_p[1].set_title("Dedalus", fontsize=bfs)
+    f_p.suptitle("Microplastics in gravity waves", fontsize=bfs+2)
+    a_p[0].set_title("Monte Carlo", fontsize=bfs)
+    a_p[1].set_title("Simplified", fontsize=bfs)
     a_p[2].set_title("Difference", fontsize=bfs)
 
     #ticks
@@ -95,7 +90,7 @@ def tidy_up_plots():
     plt.colorbar(p_p[2], ax=a_p[2], label=r"$p$ [1/unit$^2$]", location='bottom')    
     
     #grid
-    for a in a_p: a.grid(axis='y', alpha=0.4)
+    for a in a_p: a.grid(axis='both', alpha=0.4)
 
 def makemovie(i):
     p_p[0].set_array(p1.isel(time=i)) 
@@ -109,9 +104,9 @@ def startmovie():
 if __name__ == "__main__":
     try:
         initialize_plots()
-        p_p[0] = a_p[0].pcolormesh(θ, r, p1.isel(time=0), cmap=new_oranges, shading='gouraud', vmin=0, vmax=v, animated=True)
-        p_p[1] = a_p[1].pcolormesh(θ, r, p2.isel(time=0), cmap=new_blues, shading='gouraud', vmin=0, vmax=v, animated=True)
-        p_p[2] = a_p[2].pcolormesh(θ, r, p3.isel(time=0), cmap=new_orbu, shading='gouraud', vmin=-v/10, vmax=v/10, animated=True)
+        p_p[0] = a_p[0].pcolormesh(p1.XC, p1.Z, p1.isel(time=0), cmap=new_oranges, shading='gouraud', vmin=0, vmax=v, animated=True)
+        p_p[1] = a_p[1].pcolormesh(p2.XC, p2.Z, p2.isel(time=0), cmap=new_blues, shading='gouraud', vmin=0, vmax=v, animated=True)
+        p_p[2] = a_p[2].pcolormesh(p3.XC, p3.Z, p3.isel(time=0), cmap=new_orbu, shading='gouraud', vmin=-v/10, vmax=v/10, animated=True)
         tidy_up_plots()
 
         if write_movie:

@@ -1,0 +1,29 @@
+March 24 2022
+
+changed initial conditions in 2 places
+x0 = 0, 0
+Sigma = 0
+turned off reflection method by commenting it out as well
+changed tStop and wFreq
+changed R
+
+---------------------------------------------------------
+
+May 10 2022
+
+x0 = 0.2, 0
+Sigma ≠ 0
+reflections still off
+R still changed
+Γ increased to 100 to reflect scaling Γ ~ R^2
+^(maybe that doesn't make sense if a is not changed too)
+timestep changed to accommodate higher velocity
+
+---------------------------------------------------------
+
+May 16 2022
+
+Sigma ≠ 0
+x0 = 0, 0
+Γ = 5. Point is to juggle stable variance with a^2
+timestep re-reduced
