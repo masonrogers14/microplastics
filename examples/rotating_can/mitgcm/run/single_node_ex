@@ -1,0 +1,31 @@
+#!/bin/bash
+
+#SBATCH --partition sched_mit_raffaele
+#SBATCH --nodes 1
+#SBATCH --cpus-per-task 16
+#SBATCH --mem-per-cpu 2G
+#SBATCH --exclusive
+#SBATCH --time=48:00:00
+#SBATCH --error stderr
+#SBATCH --output stdout
+#SBATCH --job-name micro
+#SBATCH --mail-type FAIL,END
+#SBATCH --mail-user masonr@mit.edu
+
+#NSLOTS=$SLURM_NTASKS
+echo '**************************************************'
+#THEDATE = 'date'
+#echo 'Start job '$THEDATE
+#echo 'NSLOTS = '$NSLOTS
+#echo '===================== NODELIST ===================='
+#echo $SLURM_NODELIST
+echo '======================= env ======================='
+env
+echo '==================================================='
+
+. /etc/profile.d/modules.sh
+module add engaging/intel/2013.1.046
+
+SECONDS=0
+mpirun -n 16 ./mitgcmuv_104x50_16y
+echo "Completed in $SECONDS seconds"

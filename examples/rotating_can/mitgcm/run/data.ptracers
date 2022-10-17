@@ -1,0 +1,16 @@
+ &PTRACERS_PARM01
+ PTRACERS_numInUse=2,
+ PTRACERS_Iter0= 0,
+#
+# tracer - microplastics
+ PTRACERS_advScheme(1)=3,
+ PTRACERS_diffKh(1)=1.0e-7,
+ PTRACERS_diffKr(1)=1.0e-7, 
+ PTRACERS_initialFile(1)='p_init1.bin',
+
+ PTRACERS_advScheme(2)=3,
+ PTRACERS_diffKh(2)=1.0e-7,
+ PTRACERS_diffKr(2)=1.0e-7, 
+ PTRACERS_initialFile(2)='p_init2.bin',
+
+&
