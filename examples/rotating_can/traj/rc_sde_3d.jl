@@ -60,7 +60,7 @@ if initTime == 0
     @everywhere x₀ = [x0,y0,z0] #supplied in rc_param.py
     ξ₀ = x₀
     
-    init_prob = SDEProblem(mre_det_3d!, mre_sto_3d!, ξ₀, (0.0,wFreq), save_everystep=false, save_end=false)
+    init_prob = SDEProblem(mre_det_3d!, mre_sto_3d!, ξ₀, (0.0, eps()), save_everystep=false, save_end=false)
     init_ense = EnsembleProblem(init_prob, prob_func=rand_ic_3d!)
     init_solu = solve(init_ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, dt=5e-4, adaptive=false)
     for i in 1:nTraj
