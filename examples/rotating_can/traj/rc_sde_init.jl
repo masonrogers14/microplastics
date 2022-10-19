@@ -20,7 +20,7 @@ io = open("rc_param.py", "r")
 param_str_list = readlines(io)
 close(io)
 for param_str in param_str_list
-    param_expr = Meta.parse(param_str)
+    param_expr = Meta.parse(replace(param_str,"**"=>"^"))
     if !(typeof(param_expr) == Nothing)
         if param_expr.head == :(=)
             if isinteractive()
@@ -33,8 +33,8 @@ for param_str in param_str_list
 end
 
 #nondimensional parameters
-const ϵ = ((1+2*B)*d^2*Us)/(36*ν*Ls) #should be small
-const C = (2*g*(B-1)*Ls*ϵ)/((1+2*B)*Us^2) #should be O(1)
+# const ϵ = ((1+2*B)*d^2*Us)/(36*ν*Ls) #should be small
+# const C = (2*g*(B-1)*Ls*ϵ)/((1+2*B)*Us^2) #should be O(1)
 const A = κ/ϵ/Us/Ls
 @printf "A: %.6f\n" A
 @printf "C: %.6f\n" C
