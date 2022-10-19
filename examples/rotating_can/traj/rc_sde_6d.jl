@@ -61,7 +61,7 @@ if initTime == 0
     u₀ = fluid_vel(0, x₀...)
     ξ₀ = vcat(x₀, u₀)
     
-    init_prob = SDEProblem(mre_det_6d!, mre_sto_6d!, ξ₀, (0.0,wFreq), save_everystep=false, save_end=false)
+    init_prob = SDEProblem(mre_det_6d!, mre_sto_6d!, ξ₀, (0.0, eps()), save_everystep=false, save_end=false)
     init_ense = EnsembleProblem(init_prob, prob_func=rand_ic_6d!)
     init_solu = solve(init_ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, dt=5e-4, adaptive=false)
     for i in 1:nTraj

@@ -26,7 +26,7 @@ const RC = (RF[1:end-1] .+ RF[2:end]) ./ 2
 const nOuts = Int(floor(tStop/wFreq) + 1)
 
 #histogram bin edges and flips
-const edges = (vcat(XG, maximum(XG)+dx), vcat(YG, maximum(YG)+dy))
+const edges = (vcat(XG, maximum(XG)+dx), vcat(YG, maximum(YG)+dy), reverse(RF))
 const flip_last = true
 
 #save trajectories
@@ -47,7 +47,7 @@ function save_histogram(j::Int64)
 	end
     h_suffix = @sprintf ".%010d.data" Int(round((wFreq*j+initTime) / dt))
     io = open(h_prefix*h_suffix, "w")
-    write(io, hton.(convert(Array{Float32,2}, h_j/(vol*nTraj))))
+    write(io, hton.(convert(Array{Float32,3}, h_j/(vol*nTraj))))
     close(io)
 end
 
