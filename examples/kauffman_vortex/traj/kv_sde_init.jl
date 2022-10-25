@@ -82,8 +82,8 @@ function mre_det_4d!(ξ̇, ξ, q, t)
     au, av = fluid_acc(t, x, y)
     ξ̇[1] = u
     ξ̇[2] = v
-    ξ̇[3] = 3/(1+2*B)*au + (Ls/(Us*ϵ))*(uᶠ-u)
-    ξ̇[4] = 3/(1+2*B)*av + (Ls/(Us*ϵ))*(vᶠ-v)
+    ξ̇[3] = 3/(1+2*B)*au + (Us/(Ls*ϵ))*(uᶠ-u)
+    ξ̇[4] = 3/(1+2*B)*av + (Us/(Ls*ϵ))*(vᶠ-v)
 end
 
 #4d stochastic terms
