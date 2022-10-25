@@ -11,10 +11,10 @@ with all available processors.
 =#
 
 #tinker
-nTraj = 1
+nTraj = 500000
 saveTraj = false
-saveHist = false
-packGrid = false
+saveHist = true
+packGrid = true
 dir = "../output/exp1/"
 t_prefix = dir*"julia6dx"
 h_prefix = dir*"julia6dx"
@@ -133,6 +133,3 @@ end
 
 start()
 run()
-io = open("x.bin", "w")
-write(io, full_arr)
-close(io)
