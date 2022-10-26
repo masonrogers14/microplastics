@@ -18,6 +18,7 @@ conf = '../output/exp2/'
 pFile = 'p_large.py'
 tracs = [1, 4]
 times = [0, 25, 50, 75]
+letters = ['a', 'b', 'c', 'd']
 
 #imports
 import numpy as np
@@ -75,8 +76,8 @@ def initialize_plots():
     global cmapList
 
     #declare plots
-    fSep = plt.figure(figsize=(10,6), constrained_layout=True)
-    gSep = fSep.add_gridspec(nTracs, nTimes+1, width_ratios=(1, 1, 1, 1, .15))
+    fSep = plt.figure(figsize=(10,5), constrained_layout=True)
+    gSep = fSep.add_gridspec(nTracs, nTimes+1, width_ratios=(1, 1, 1, 1, .1))
     aSep = np.array([[None] * nTimes for j in range(nTracs)])
     cSep = [None] * nTracs
     for j1 in range(nTracs):
@@ -85,9 +86,10 @@ def initialize_plots():
             aSep[j1,j2] = fSep.add_subplot(gSep[j1,j2], projection='polar')
 
     #label axes
-    for a in aSep[-1]: a.set_xlabel(r'$x$', fontsize=bfs)
-    for a in aSep: a[0].set_ylabel(r'$y$', fontsize=bfs)
-    for j in range(nTimes): aSep[0,j].set_title(r'$t = {0:d}$'.format(times[j]))
+    aSep[-1,0].set_xlabel(r'$x$', fontsize=bfs)
+    aSep[-1,0].set_ylabel(r'$y$', fontsize=bfs)
+    for j in range(nTimes):
+        aSep[0,j].set_title('({0})\n'.format(letters[j])+r'$t = {0:d}$'.format(times[j]))
 
     #turn labels off
     for a in aSep.flatten():
@@ -110,9 +112,17 @@ def tidy_up_plots():
     #colorbar
     for j in range(nTracs):
         cbar = plt.colorbar(pSep[j], cax=cSep[j])
+        cbar.ax.tick_params(labelsize=bfs-4)
+        cbar.ax.set_ylabel(r'$p$ ('+labels[j]+')', fontsize=bfs)
 
     #grids
-    for a in aSep.flatten(): a.grid()
+    for aa in aSep.flatten():
+        aa.set_xticks(np.pi/2 * np.arange(4))
+        aa.set_yticks([R/6, R/3, R/2])
+        aa.grid(alpha=.2)
+    aSep[-1,0].set_yticklabels(['{0:.1f}'.format(r) for r in [R/6, R/3, R/2]],
+                               position=(np.pi,0), fontsize=bfs-2, ha='center')
+
 
     #save
     if saveFigures:

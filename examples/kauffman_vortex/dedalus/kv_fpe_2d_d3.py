@@ -64,7 +64,7 @@ solver.stop_sim_time = stop_sim_time
 p['g'] = 1/(2*np.pi*Σ) * np.exp(-(r**2 - 2*r*(x0*np.cos(s)+y0*np.sin(s)) + x0**2+y0**2)/(2*Σ))
 
 # Analysis
-snapshots = solver.evaluator.add_file_handler('kv_snaps_exp1_mpi_mod2', sim_dt=wFreq, max_writes=1000)
+snapshots = solver.evaluator.add_file_handler('kv_snaps_test', sim_dt=wFreq, max_writes=1000)
 snapshots.add_tasks(solver.state)
 
 # Flow properties
