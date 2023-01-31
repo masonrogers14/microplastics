@@ -8,7 +8,7 @@ Created on Fri Jul 30 2021
 
 #tinker
 write_movie = True
-mname = "../figures/1017_mitgcm_x.mp4"
+mname = "../figures/1121_still.mp4"
 
 #imports
 import numpy as np
@@ -16,11 +16,11 @@ import xarray as xr
 import matplotlib.pyplot as plt
 import matplotlib.animation as movie
 from rc_param import *
-from dict_MITgcm import ds
+from read_MITgcm import ds
 from matplotlib.colors import LogNorm, to_rgba, ListedColormap
 
 #define plot variable
-nTracs = 2
+nTracs = 1
 
 #select plane
 p = list(ds.values())[0].interp(YC=0) * dy
@@ -107,6 +107,7 @@ if __name__ == "__main__":
         for i in range(nTracs-1,-1,-1):
             p_p[i] = a_p.pcolormesh(p.XC, p.Z, p['TRAC0'+str(i+1)].isel(time=0),
                                     cmap=cmaps[i], shading='gouraud', vmin=0, vmax=v, animated=True)
+        plt.scatter(1/3,.5,c='green',s=10)
         tidy_up_plots()
 
         if write_movie:

@@ -11,15 +11,16 @@ with all available processors.
 =#
 
 #tinker
-nTraj = 500000
+nTraj = 100000
 saveTraj = false
 saveHist = true
 packGrid = true
-dir = "../output/exp1/"
-t_prefix = dir*"julia6dx"
-h_prefix = dir*"julia6dx"
+dir = "../output/symm_sto/"
+t_prefix = dir*"julia6d"
+h_prefix = dir*"julia6d"
 initTime = 0
 nDims = 6
+Δt = 5e-4
 
 #activate environment
 using Pkg
@@ -40,7 +41,7 @@ include("rc_traj2hist.jl")
 
 #initialize storage arrays
 temp_arr = NaN*zeros(nDims, nTraj)
-inMemory = nTraj * nOuts < 1e9
+inMemory = false #nTraj * nOuts < 1e9
 if inMemory
     println("in memory")
     full_arr = NaN * zeros(nDims, nTraj, nOuts)
@@ -64,7 +65,7 @@ function start()
         
         init_prob = SDEProblem(mre_det_6d!, mre_sto_6d!, ξ₀, (0.0, eps()), save_everystep=false, save_end=false)
         init_ense = EnsembleProblem(init_prob, prob_func=rand_ic_6d!)
-        init_solu = solve(init_ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, dt=2e-3, adaptive=false)
+        init_solu = solve(init_ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, dt=Δt, adaptive=false)
         for i in 1:nTraj
         temp_arr[:,i] = init_solu[i][1]
         #save trajectories
@@ -96,7 +97,7 @@ function run()
     if inMemory
         prob = SDEProblem(mre_det_6d!, mre_sto_6d!, zeros(nDims), (0, wFreq*(nOuts-1)), saveat=0:wFreq:wFreq*(nOuts-1))
         ense = EnsembleProblem(prob, prob_func=renew!)
-        @time solu = solve(ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, callback=cb_set, dt=2e-3, adaptive=false)
+        @time solu = solve(ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, callback=cb_set, dt=Δt, adaptive=false)
         for i in 1:nTraj
             full_arr[:,i,:] = solu[i][:,:]
         end
@@ -115,7 +116,7 @@ function run()
         for j in 1:nOuts-1
             prob = SDEProblem(mre_det_6d!, mre_sto_6d!, zeros(nDims), (wFreq*(j-1),wFreq*j), save_everystep=false, save_end=true)
             ense = EnsembleProblem(prob, prob_func=renew!)
-            solu = solve(ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, callback=cb_set, dt=2e-3, adaptive=false)
+            solu = solve(ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, callback=cb_set, dt=Δt, adaptive=false)
             for i in 1:nTraj
                 temp_arr[:,i] = solu[i][end]
             end

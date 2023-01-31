@@ -41,9 +41,9 @@
   fileName(4) = 't4bud',
   frequency(4) = -9999,
   timePhase(4) = 0.00,
-  fields(1,5)  = 'TRAC01', 'TRAC02',
-  fileName(5) = 'mitgcm2dx',
-  frequency(5) = -1.0,
+  fields(1,5)  = 'TRAC01',
+  fileName(5) = 'mitgcm3d_ss_4',
+  frequency(5) = -25.,
   timePhase(5) = 0.00,
  &
 

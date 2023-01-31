@@ -60,54 +60,54 @@ function fluid_vel(t, x, y, z)
     return [u, v, w]
 end
 
-# #t derivatives
-# function fluid_vel_t(t, x, y, z)
-#     ρ = sqrt(x^2 + y^2)
-#     ut = -δ*(1-β*z)*y*σ*γ*sin(σ*t)
-#     vt = δ*(1-β*z)*x*σ*γ*sin(σ*t)
-#     wt = 0
-#     return [ut, vt, wt]
-# end
+#t derivatives
+function fluid_vel_t(t, x, y, z)
+    ρ = sqrt(x^2 + y^2)
+    ut = -δ*(1-β*z)*y*σ*γ*sin(σ*t)
+    vt = δ*(1-β*z)*x*σ*γ*sin(σ*t)
+    wt = 0
+    return [ut, vt, wt]
+end
 
-# #x derivatives
-# function fluid_vel_x(t, x, y, z)
-#     ρ = sqrt(x^2 + y^2)
-#     ux = b*(1-2*z)*x^2/(3*ρ) - b*(1-2*z)*(R-ρ)/3 + δ*(1-β*z)*x
-#     vx = b*(1-2*z)*x*y/(3*ρ) + a*(c+z^2) - δ*(1-β*z)*(y-ys+γ*cos(σ*t))
-#     wx = -b*(1-z)*z/ρ * x
-#     return [ux, vx, wx]
-# end
+#x derivatives
+function fluid_vel_x(t, x, y, z)
+    ρ = sqrt(x^2 + y^2)
+    ux = b*(1-2*z)*x^2/(3*ρ) - b*(1-2*z)*(R-ρ)/3 + δ*(1-β*z)*x
+    vx = b*(1-2*z)*x*y/(3*ρ) + a*(c+z^2) - δ*(1-β*z)*(y-ys+γ*cos(σ*t))
+    wx = -b*(1-z)*z/ρ * x
+    return [ux, vx, wx]
+end
 
-# #y derivatives
-# function fluid_vel_y(t, x, y, z) 
-#     ρ = sqrt(x^2 + y^2)
-#     uy = b*(1-2*z)*x*y/(3*ρ) - a*(c+z^2) + δ*(1-β*z)*(3*y-ys+γ*cos(σ*t))
-#     vy = b*(1-2*z)*y^2/(3*ρ) - b*(1-2*z)*(R-ρ)/3 - δ*(1-β*z)*x
-#     wy = -b*(1-z)*z/ρ * y
-#     return [uy, vy, wy]
-# end
+#y derivatives
+function fluid_vel_y(t, x, y, z) 
+    ρ = sqrt(x^2 + y^2)
+    uy = b*(1-2*z)*x*y/(3*ρ) - a*(c+z^2) + δ*(1-β*z)*(3*y-ys+γ*cos(σ*t))
+    vy = b*(1-2*z)*y^2/(3*ρ) - b*(1-2*z)*(R-ρ)/3 - δ*(1-β*z)*x
+    wy = -b*(1-z)*z/ρ * y
+    return [uy, vy, wy]
+end
 
-# #z derivatives
-# function fluid_vel_z(t, x, y, z)
-#     ρ = sqrt(x^2 + y^2)
-#     uz = 2*b*x*(R-ρ)/3 - 2*a*y*z - δ*β*(y*(y-ys+γ*cos(σ*t)) - (R^2-ρ^2)/2)
-#     vz = 2*b*y*(R-ρ)/3 + 2*a*x*z + δ*β*x*(y-ys+γ*cos(σ*t))
-#     wz = b*(1-2*z)*(2*R/3-ρ)
-#     return [uz, vz, wz]
-# end
+#z derivatives
+function fluid_vel_z(t, x, y, z)
+    ρ = sqrt(x^2 + y^2)
+    uz = 2*b*x*(R-ρ)/3 - 2*a*y*z - δ*β*(y*(y-ys+γ*cos(σ*t)) - (R^2-ρ^2)/2)
+    vz = 2*b*y*(R-ρ)/3 + 2*a*x*z + δ*β*x*(y-ys+γ*cos(σ*t))
+    wz = b*(1-2*z)*(2*R/3-ρ)
+    return [uz, vz, wz]
+end
 
-# #material fluid acceleration
-# function fluid_acc(t, x, y, z)
-#     u, v, w = fluid_vel(t, x, y, z)
-#     ut, vt, wt = fluid_vel_t(t, x, y, z)
-#     ux, vx, wx = fluid_vel_x(t, x, y, z)
-#     uy, vy, wy = fluid_vel_y(t, x, y, z)
-#     uz, vz, wz = fluid_vel_z(t, x, y, z)
-#     au = ut + u*ux + v*uy + w*uz
-#     av = vt + u*vx + v*vy + w*vz
-#     aw = wt + u*wx + v*wy + w*wz
-#     return [au; av; aw]
-# end
+#material fluid acceleration
+function fluid_acc(t, x, y, z)
+    u, v, w = fluid_vel(t, x, y, z)
+    ut, vt, wt = fluid_vel_t(t, x, y, z)
+    ux, vx, wx = fluid_vel_x(t, x, y, z)
+    uy, vy, wy = fluid_vel_y(t, x, y, z)
+    uz, vz, wz = fluid_vel_z(t, x, y, z)
+    au = ut + u*ux + v*uy + w*uz
+    av = vt + u*vx + v*vy + w*vz
+    aw = wt + u*wx + v*wy + w*wz
+    return [au, av, aw]
+end
 
 #optimized fluid velocity and derivatives
 function uf_and_derivatives(t, x, y, z)
@@ -156,7 +156,7 @@ function mre_det_6d!(ξ̇, ξ, q, t)
     u = ξ[4:6]
     uᶠ, ∂tuᶠ, ∇uᶠ = uf_and_derivatives(t, x...)
     u̇ᶠ = ∂tuᶠ + ∇uᶠ*uᶠ
-    ξ̇[1:3] = uᶠ
+    ξ̇[1:3] = u
     ξ̇[4:6] = 3/(1+2*B)*u̇ᶠ + (Us/(Ls*ϵ))*(uᶠ-u)
     ξ̇[6] -= Us^2*C/(Ls*ϵ)
 end

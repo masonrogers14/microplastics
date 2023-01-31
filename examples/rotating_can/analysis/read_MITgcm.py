@@ -16,9 +16,9 @@ import numpy as np
 import xgcm as xg
 
 #data locations
-dirs = ['../mitgcm/run/']
-fnames = [['mitgcm2dx']]
-iters = [np.arange(0,100000,1000)]
+dirs = ['../output/symm_sto/']
+fnames = [['kappa0', 'kappa1', 'mitgcm3d_ss_4']]
+iters = [np.arange(0,400001,25000)] * len(dirs)
 
 #load
 ds = {}

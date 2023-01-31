@@ -28,7 +28,7 @@ wr = np.sqrt(wx**2 + wy**2)
 vol = dx*dy*dz
 
 #make velocity binaries
-nSnaps = 10 if σ == 0 else 1
+nSnaps = 10 if σ > 0 else 1
 T = 2*np.pi/σ if σ != 0 else 1
 for t, i in zip(np.linspace(0, T, nSnaps, endpoint=False), range(1,nSnaps+1)):
     #fluid velocities
