@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-kv_fig2.py plots the variance growth for two configurations of the Kauffman vortex
-experiment.
+kv_fig1.py plots snapshots of distributions
 
 Created on Fri Jul 22 2022
 
@@ -14,18 +13,19 @@ Created on Fri Jul 22 2022
 
 #tinker
 saveFigures = True
-conf = '../output/exp2/'
+conf = '../mitgcm/run/'
 pFile = 'p_large.py'
-tracs = [1, 4]
-times = [0, 25, 50, 75]
-letters = ['a', 'b', 'c', 'd']
+tracs = [1]
+times = [0, 100, 200, 500]
+logNorm = False
+Rfac = 2/3
 
 #imports
 import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
 from dict_MITgcm import ds, gr
-from matplotlib.colors import to_rgba, ListedColormap
+from matplotlib.colors import to_rgba, ListedColormap, LogNorm, Normalize
 
 #read files
 with open(pFile, 'r') as f:
@@ -38,12 +38,13 @@ labels = ['full Monte Carlo', 'reduced Monte Carlo',
 labels = [labels[j-1] for j in tracs]
 nTracs = len(tracs)
 nTimes = len(times)
+letters = ['a', 'b', 'c', 'd']
 p = [None] * nTracs
 for j in range(nTracs):
     p[j] = ds[conf]['TRAC0{0:d}'.format(tracs[j])]
     if 'Z' in p[j].dims:
         p[j] = p[j].sum(dim='Z') * dz
-
+Rmax = Rfac * R
 
 
 
@@ -54,9 +55,9 @@ for j in range(nTracs):
 θ = xr.DataArray(data=np.linspace(0,2*np.pi,endpoint=True),
                  dims=['θ'],
                  coords={'θ': np.linspace(0,2*np.pi,endpoint=True)})
-r = xr.DataArray(data=np.linspace(0,2*R/3,endpoint=False),
+r = xr.DataArray(data=np.linspace(0,Rmax,endpoint=False),
                  dims=['r'],
-                 coords={'r': np.linspace(0,2*R/3,endpoint=False)})
+                 coords={'r': np.linspace(0,Rmax,endpoint=False)})
 for j in range(nTracs):
     p[j] = p[j].interp(XC=r*np.cos(θ), YC=r*np.sin(θ)).transpose('r','θ',...)
 v = np.max(np.array([p[j].max().values for j in range(nTracs)]))
@@ -73,7 +74,7 @@ blw = 2
 def initialize_plots():
     #declare variables
     global fSep, aSep, pSep, cSep
-    global cmapList
+    global cmapList, cnorm
 
     #declare plots
     fSep = plt.figure(figsize=(10,5), constrained_layout=True)
@@ -105,6 +106,9 @@ def initialize_plots():
     cmapOr = ListedColormap(arrayOr)
     cmapList = [cmapBl, cmapOr]
 
+    #colormap norm
+    cnorm = LogNorm(1e-2*v, v) if logNorm else Normalize(0, v)
+
     #prepare to store plots for legends
     pSep = [None] * nTracs
 
@@ -118,9 +122,9 @@ def tidy_up_plots():
     #grids
     for aa in aSep.flatten():
         aa.set_xticks(np.pi/2 * np.arange(4))
-        aa.set_yticks([R/6, R/3, R/2])
+        aa.set_yticks([Rmax/4, Rmax/2, 3*Rmax/4])
         aa.grid(alpha=.2)
-    aSep[-1,0].set_yticklabels(['{0:.1f}'.format(r) for r in [R/6, R/3, R/2]],
+    aSep[-1,0].set_yticklabels(['{0:.1f}'.format(r) for r in [Rmax/4, Rmax/2, 3*Rmax/4]],
                                position=(np.pi,0), fontsize=bfs-2, ha='center')
 
 
@@ -139,7 +143,7 @@ if __name__ == "__main__":
         for j1 in range(nTracs):
             for j2 in range(nTimes):
                 p_j = p[j1].sel(time=times[j2], method='nearest')
-                pSep[j1] = aSep[j1,j2].pcolormesh(θ, r, p_j, vmin=0, vmax=v,
+                pSep[j1] = aSep[j1,j2].pcolormesh(θ, r, p_j, norm=cnorm,
                                                   shading='gouraud', cmap=cmapList[j1])
 
         tidy_up_plots() 

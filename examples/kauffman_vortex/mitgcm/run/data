@@ -17,8 +17,7 @@
 # Time stepping parameters
  &PARM03
  nIter0=0,
-#endTime=43200.,
- nTimeSteps=100000,
+ nTimeSteps=30001,
  deltaT=1.0e-3,
  deltaTtracer=1.0e-3,
  deltaTClock=1.0e-3,
@@ -38,8 +37,8 @@
  usingCartesianGrid=.TRUE.,
  dXspacing=0.01,
  dYspacing=0.01,
- xgOrigin=-5.02,
- ygOrigin=-5.02,
+ xgOrigin=-0.52,
+ ygOrigin=-0.52,
  delZ=1*1.0,
  &
 

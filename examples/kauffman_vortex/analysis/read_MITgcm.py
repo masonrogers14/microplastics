@@ -23,13 +23,13 @@ import xgcm as xg
 data_dirs = ['../big_output/', '../output/']; file_names = [['offcen'], ['trapped']]
 
 data_dirs = ['../mitgcm/run/']#, '../output/exp2/']
-file_names = [['mitgcm2d']]#, ['dedalus2d']]
+file_names = [['mitgcm2d_quad']]#, ['dedalus2d']]
 #load
 tmp = {}
 nSoFar = 0
 for dir, fname in zip(data_dirs, file_names):
     print(dir) 
-    iters = np.hstack([np.arange(0,20000,1000)])#, np.arange(500000, 10500000, 10000)])
+    iters = np.hstack([np.arange(0,30001,1000)])#, np.arange(500000, 10500000, 10000)])
     tmp[nSoFar] = xm.open_mdsdataset(dir, iters=iters, prefix=fname, geometry='cartesian') 
     nTracs = 1 #len(tmp[nSoFar].data_vars)
     for j in range(1, nTracs+1):

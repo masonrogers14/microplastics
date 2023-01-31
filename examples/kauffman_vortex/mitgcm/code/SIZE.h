@@ -42,8 +42,8 @@ CEOP
       INTEGER Ny
       INTEGER Nr
       PARAMETER (
-     &           sNx = 251,
-     &           sNy = 251,
+     &           sNx = 26,
+     &           sNy = 26,
      &           OLx =   4,
      &           OLy =   4,
      &           nSx =   1,

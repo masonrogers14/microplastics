@@ -11,14 +11,14 @@ with all available processors.
 =#
 
 #tinker
-nTraj = 500000
+nTraj = 50000
 saveTraj = false
 saveHist = true
 packGrid = true
-dir = "../output/exp1/"
-t_prefix = dir*"julia4dx"
-h_prefix = dir*"julia4dx"
-initTime = 0.0001
+dir = "../output/for_movies/"
+t_prefix = dir*"julia4d"
+h_prefix = dir*"julia4d"
+initTime = 0 
 
 #activate environment
 using Pkg

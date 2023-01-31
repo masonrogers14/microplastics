@@ -42,7 +42,7 @@
   frequency(4) = -9999,
   timePhase(4) = 0.00,
   fields(1,5)  = 'TRAC01'
-  fileName(5) = 'mitgcm2d',
+  fileName(5) = 'mitgcm2d_quad',
   frequency(5) = -1.0,
   timePhase(5) = 0.00,
  &

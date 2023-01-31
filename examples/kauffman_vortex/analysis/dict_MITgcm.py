@@ -20,6 +20,9 @@ dirs = ['../output/exp1/', '../output/exp2/']
 fnames = [['julia4dx', 'julia2dx', 'dedalus2d', 'mitgcm2d'], ['julia4dx', 'julia2dx', 'dedalus2d', 'mitgcm2d']]
 iters = [np.arange(0,100000,1000), np.arange(0,100000,1000)]
 
+#dirs = ['../mitgcm/run/']; fnames=[['mitgcm2d_quad']]; iters = [np.arange(0, 30001, 1000)]
+#dirs = ['../output/for_movies/']; fnames = [['julia4d', 'mitgcm2d_movie']]; iters = [np.arange(0, 30001, 250)];
+
 #load
 ds = {}
 gr = {}
