@@ -11,14 +11,14 @@ with all available processors.
 =#
 
 #tinker
-nTraj = 500000
-saveTraj = false
+nTraj = 100
+saveTraj = true
 saveHist = true
 packGrid = true
-dir = "../output/exp1/"
-t_prefix = dir*"julia4dx"
-h_prefix = dir*"julia4dx"
-initTime = 0.0001
+dir = "/pool001/masonr/kv4d/"
+t_prefix = dir*"julia4d"
+h_prefix = dir*"julia4d"
+initTime = 0.
 
 #activate environment
 using Pkg
