@@ -11,7 +11,7 @@ with all available processors.
 =#
 
 #tinker
-nTraj = 1000000
+nTraj = 10000000
 saveTraj = true
 saveHist = true
 packGrid = true
@@ -57,9 +57,8 @@ println("setting initial conditions")
 if initTime == 0
     #initial conditions
     @everywhere x₀ = [x0,y0] #supplied in kv_param.py
-    ξ₀ = x₀
     
-    init_prob = SDEProblem(mre_det_2d!, mre_sto_2d!, ξ₀, (0.0,wFreq), save_everystep=false, save_end=false)
+    init_prob = SDEProblem(mre_det_2d!, mre_sto_2d!, x₀, (0.0,wFreq), save_everystep=false, save_end=false)
     init_ense = EnsembleProblem(init_prob, prob_func=rand_ic_2d!)
     init_solu = solve(init_ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, dt=5e-4, adaptive=false)
     for i in 1:nTraj
@@ -92,35 +91,35 @@ if inMemory
     prob = SDEProblem(mre_det_2d!, mre_sto_2d!, zeros(2), (0, wFreq*(nOuts-1)), saveat=0:wFreq:wFreq*(nOuts-1))
     ense = EnsembleProblem(prob, prob_func=renew!)
     solu = solve(ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, callback=cb_set, dt=5e-4, adaptive=false)
-#    for i in 1:nTraj
-#        full_arr[:,i,:] = solu[i][:,:]
-#    end
-#    for j in 1:nOuts-1
-#        temp_arr[:,:] = full_arr[:,:,j+1] 
-#        #save trajectories
-#        if saveTraj || j == nOuts-1
-#            save_trajectories(j)
-#        end
-#        #compute and save histogram data in MITgcm format
-#        if saveHist 
-#            save_histogram(j)
-#        end
-#    end
-#else 
-#    for j in 1:nOuts-1
-#        prob = SDEProblem(mre_det_2d!, mre_sto_2d!, zeros(2), (wFreq*(j-1),wFreq*j), save_everystep=false, save_end=true)
-#        ense = EnsembleProblem(prob, prob_func=renew!)
-#        solu = solve(ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, callback=cb_set, dt=5e-4, adaptive=false)
-#        for i in 1:nTraj
-#            temp_arr[:,i] = solu[i][end]
-#        end
-#        #save trajectories
-#        if saveTraj || j == nOuts-1
-#            save_trajectories(j)
-#        end
-#        #compute and save histogram data in MITgcm format
-#        if saveHist 
-#            save_histogram(j)
-#        end
-#    end
+    for i in 1:nTraj
+        full_arr[:,i,:] = solu[i][:,:]
+    end
+    for j in 1:nOuts-1
+        temp_arr[:,:] = full_arr[:,:,j+1] 
+        #save trajectories
+        if saveTraj || j == nOuts-1
+            save_trajectories(j)
+        end
+        #compute and save histogram data in MITgcm format
+        if saveHist 
+            save_histogram(j)
+        end
+    end
+else 
+    for j in 1:nOuts-1
+        prob = SDEProblem(mre_det_2d!, mre_sto_2d!, zeros(2), (wFreq*(j-1),wFreq*j), save_everystep=false, save_end=true)
+        ense = EnsembleProblem(prob, prob_func=renew!)
+        solu = solve(ense, SOSRI(), EnsembleDistributed(), trajectories=nTraj, callback=cb_set, dt=5e-4, adaptive=false)
+        for i in 1:nTraj
+            temp_arr[:,i] = solu[i][end]
+        end
+        #save trajectories
+        if saveTraj || j == nOuts-1
+            save_trajectories(j)
+        end
+        #compute and save histogram data in MITgcm format
+        if saveHist 
+            save_histogram(j)
+        end
+    end
 end

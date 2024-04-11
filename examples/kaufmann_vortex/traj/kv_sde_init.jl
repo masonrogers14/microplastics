@@ -130,6 +130,7 @@ end
 
 #continue ensemble
 function renew!(p, i, r)
+    @printf "proc: %d \n" myid()
     p.u0 .= remotecall_fetch(get_ic, 1, i)
     return p
 end
