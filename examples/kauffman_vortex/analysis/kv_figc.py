@@ -88,6 +88,7 @@ for ds_j, j1 in zip(ds.values(), range(nConfs)):
                      dims=['r'],
                      coords={'r': np.linspace(0,R[j1],endpoint=False)})
     ds_j = ds_j.isel(Z=0)
+    ds_j = ds_j.drop_vars([k for k in ds_j.coords.keys() if k not in ds_j.dims])
     for j2 in range(nSnaps):
         tmp = ds_j['TRAC{0:02d}'.format(3*j1+1)].interp(XC=r*np.cos(θ), YC=r*np.sin(θ))
         p[j1][j2][0] = tmp.isel(time=0)
@@ -137,12 +138,15 @@ def initialize_plots():
 
     #colors
     plotRGBs = [plt.cm.get_cmap('tab10')(3*j/10)[:-1] for j in range(nSnaps)]
-    cmapArrs = [np.hstack([np.outer(np.ones(256), pRGB_j), np.outer(np.linspace(0,1,256), np.ones(1))]) \
+    cmapArrs = [np.hstack([np.outer(np.ones(256), pRGB_j), 
+                           np.outer(np.linspace(0,1,256), np.ones(1))])
                 for pRGB_j in plotRGBs]
     cmapList = [ListedColormap(cArr_j) for cArr_j in cmapArrs]
 
     #colormap norms
-    cnorms = [LogNorm(v_j**1e-2, v_j) for v_j in v] if logNorm else [Normalize(0, v_j) for v_j in v]
+    cnorms = [
+        LogNorm(v_j**1e-2, v_j) if logNorm else Normalize(0, v_j) for v_j in v
+    ]
 
     #colorbars
     cSnp = [[None for j2 in range(nSnaps)] for j1 in range(nConfs)]
@@ -172,8 +176,8 @@ def Σp_lines_large(t, j):
     Σ0 = np.linspace(lΣ, uΣ, 20)
     for Σ0_j in Σ0:
         pVar[j][nPerCf] = aVar[j].plot(t, Σp_large(t, j, Σ0_j),
-                                         color='grey', alpha=0.5, lw=blw/2,
-                                         linestyle='dashed')[0]
+                                       color='grey', alpha=0.5, lw=blw/2,
+                                       linestyle='dashed')[0]
     aVar[j].set_ylim(ll, ul)
 
 def tidy_up_plots():
@@ -197,8 +201,10 @@ def tidy_up_plots():
                 a.set_xticks(np.pi/2 * np.arange(4))
                 a.set_yticks([R[j1]/4, R[j1]/2, 3*R[j1]/4])
                 a.grid(alpha=.3)
-        aSnp[-1,2*j1].set_yticklabels(['{0:.1f}'.format(r) for r in [R[j1]/4, R[j1]/2, 3*R[j1]/4]],
-                                      position=(np.pi,0), fontsize=bfs-4, ha='center') 
+        aSnp[-1,2*j1].set_yticklabels(
+            ['{0:.1f}'.format(r) for r in [R[j1]/4, R[j1]/2, 3*R[j1]/4]],
+            position=(np.pi,0), fontsize=bfs-4, ha='center'
+        ) 
 
     #save
     if saveFigures:
@@ -217,8 +223,12 @@ if __name__ == "__main__":
         aVar[0].set_xlim([np.min(t0), np.max(t0)])
         aVar[1].set_xlim([np.min(t1), np.max(t1)])
         for j in range(1, nPerCf+1): 
-            pVar[0][j-1], = aVar[0].plot(t0, ds[dirs[0]]['Σo{0:02d}'.format(j)], lw=blw)
-            pVar[1][j-1], = aVar[1].plot(t1, ds[dirs[1]]['Σo{0:02d}'.format(j)], lw=blw)
+            pVar[0][j-1], = aVar[0].plot(
+                t0, ds[dirs[0]]['Σo{0:02d}'.format(j)], lw=blw
+            )
+            pVar[1][j-1], = aVar[1].plot(
+                t1, ds[dirs[1]]['Σo{0:02d}'.format(j)], lw=blw
+            )
         Σp_lines_small(ds[dirs[0]]['time'].values, 0)
         Σp_lines_large(ds[dirs[1]]['time'].values, 1)
         
@@ -226,10 +236,14 @@ if __name__ == "__main__":
         for j1 in range(nConfs):
             for j2 in range(nSnaps):
                 tmp = p[j1][j2]
-                pSnp[j1][j2][0] = aSnp[j2,2*j1].pcolormesh(tmp[0].θ, tmp[0].r, tmp[0],
-                                  shading='gouraud', cmap=cmapList[j2], norm=cnorms[j1])
-                pSnp[j1][j2][1] = aSnp[j2,2*j1+1].pcolormesh(tmp[1].θ, tmp[1].r, tmp[1],
-                                  shading='gouraud', cmap=cmapList[j2], norm=cnorms[j1])
+                pSnp[j1][j2][0] = aSnp[j2,2*j1].pcolormesh(
+                    tmp[0].θ, tmp[0].r, tmp[0],
+                    shading='gouraud', cmap=cmapList[j2], norm=cnorms[j1]
+                )
+                pSnp[j1][j2][1] = aSnp[j2,2*j1+1].pcolormesh(
+                    tmp[1].θ, tmp[1].r, tmp[1],
+                    shading='gouraud', cmap=cmapList[j2], norm=cnorms[j1]
+                )
 
         tidy_up_plots() 
         plt.show()

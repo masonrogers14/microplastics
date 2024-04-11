@@ -42,7 +42,7 @@ for d, fs, i in zip(dirs, fnames, iters):
             tmp[f] = tmp[f].rename({'TRAC{0:02d}'.format(j): 'TRAC{0:02d}'.format(j+nSoFar)})
         nSoFar += n_j
 
-    ds[d] = xr.combine_by_coords(tmp.values())
+    ds[d] = xr.merge(tmp.values())
         
     gr[d] = xg.Grid(ds[d],
                     coords={'Z': {'center': 'Z', 'left':'Zl'},
