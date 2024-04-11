@@ -8,23 +8,25 @@ Created on Fri Jul 30 2021
 
 #tinker
 write_movie = True
-mname = "../figures/0825_comp.mp4"
+mname = "../figures/agu_sbs.mp4"
 
 #imports
 import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
 import matplotlib.animation as movie
-from read_MITgcm import ds
+from kv_param import *
+from dict_MITgcm import ds
 from matplotlib.colors import LogNorm, to_rgba, ListedColormap
+ds = list(ds.values())[-1]
 
 #polar coordinates
 θ = xr.DataArray(data=np.linspace(0,2*np.pi,endpoint=True),
                  dims=['θ'],
                  coords={'θ': np.linspace(0,2*np.pi,endpoint=True)})
-r = xr.DataArray(data=np.linspace(0,5.0,endpoint=False),
+r = xr.DataArray(data=np.linspace(0,R,endpoint=False),
                  dims=['r'],
-                 coords={'r': np.linspace(0,5.0,endpoint=False)})
+                 coords={'r': np.linspace(0,R,endpoint=False)})
 p = ds.sum(dim='Z').interp(XC=r*np.cos(θ), YC=r*np.sin(θ))
 v = np.maximum(p['TRAC01'].max().values, p['TRAC02'].max().values)
 #cnorm = LogNorm(v*1e-4,v)

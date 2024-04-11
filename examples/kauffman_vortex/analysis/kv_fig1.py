@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-kv_fig2.py plots the variance growth for two configurations of the Kauffman vortex
-experiment.
+kv_fig1.py plots snapshots of distributions
 
 Created on Fri Jul 22 2022
 
@@ -14,22 +13,54 @@ Created on Fri Jul 22 2022
 
 #tinker
 saveFigures = True
-fname = '../figures/kv_fig1.png'
+conf = '../mitgcm/run/'
+pFile = 'p_large.py'
+tracs = [1]
+times = [0, 100, 200, 500]
+logNorm = False
+Rfac = 2/3
 
 #imports
 import numpy as np
 import xarray as xr
 import matplotlib.pyplot as plt
-#from read_MITgcm import ds, gr
+from dict_MITgcm import ds, gr
+from matplotlib.colors import to_rgba, ListedColormap, LogNorm, Normalize
 
-#relevant variables for plot parameters
-nTracs = 2
+#read files
+with open(pFile, 'r') as f:
+    exec(f.read())
+    ϵ = ((1+2*B)*d**2*Us)/(36*ν*Ls) #small parameter
+
+#initialize
+labels = ['full Monte Carlo', 'reduced Monte Carlo',
+          'reduced Dedalus', 'reduced MITgcm']
+labels = [labels[j-1] for j in tracs]
+nTracs = len(tracs)
+nTimes = len(times)
+letters = ['a', 'b', 'c', 'd']
+p = [None] * nTracs
+for j in range(nTracs):
+    p[j] = ds[conf]['TRAC0{0:d}'.format(tracs[j])]
+    if 'Z' in p[j].dims:
+        p[j] = p[j].sum(dim='Z') * dz
+Rmax = Rfac * R
 
 
 
 '''-----------------------------------------------------------------------------
 ----------CODE------------------------------------------------------------------
 -----------------------------------------------------------------------------'''
+#interpolate to polar coordinates
+θ = xr.DataArray(data=np.linspace(0,2*np.pi,endpoint=True),
+                 dims=['θ'],
+                 coords={'θ': np.linspace(0,2*np.pi,endpoint=True)})
+r = xr.DataArray(data=np.linspace(0,Rmax,endpoint=False),
+                 dims=['r'],
+                 coords={'r': np.linspace(0,Rmax,endpoint=False)})
+for j in range(nTracs):
+    p[j] = p[j].interp(XC=r*np.cos(θ), YC=r*np.sin(θ)).transpose('r','θ',...)
+v = np.max(np.array([p[j].max().values for j in range(nTracs)]))
 
 
 
@@ -42,33 +73,78 @@ blw = 2
 
 def initialize_plots():
     #declare variables
-    global f_sep, a_sep, p_sep
+    global fSep, aSep, pSep, cSep
+    global cmapList, cnorm
 
     #declare plots
-    f_sep, a_sep = plt.subplots(figsize=(10,6), ncols=4, nrows=2,
-                                sharey=True, sharex=True,  constrained_layout=True)
+    fSep = plt.figure(figsize=(10,5), constrained_layout=True)
+    gSep = fSep.add_gridspec(nTracs, nTimes+1, width_ratios=(1, 1, 1, 1, .1))
+    aSep = np.array([[None] * nTimes for j in range(nTracs)])
+    cSep = [None] * nTracs
+    for j1 in range(nTracs):
+        cSep[j1] = fSep.add_subplot(gSep[j1,-1])
+        for j2 in range(nTimes):
+            aSep[j1,j2] = fSep.add_subplot(gSep[j1,j2], projection='polar')
 
     #label axes
-    for a in a_sep[-1]: a.set_xlabel(r'$x$', fontsize=bfs)
-    for a in a_sep: a[0].set_ylabel(r'$y$', fontsize=bfs)
-    for j in range(4): a_sep[0][j].set_title(r'$t = $ {0:d}'.format(j*500))
+    aSep[-1,0].set_xlabel(r'$x$', fontsize=bfs)
+    aSep[-1,0].set_ylabel(r'$y$', fontsize=bfs)
+    for j in range(nTimes):
+        aSep[0,j].set_title('({0})\n'.format(letters[j])+r'$t = {0:d}$'.format(times[j]))
+
+    #turn labels off
+    for a in aSep.flatten():
+        a.set_xticklabels([])
+        a.set_yticklabels([])
+
+    #colors
+    plotBl = plt.cm.get_cmap('tab10')(0.)[:-1]
+    plotOr = plt.cm.get_cmap('tab10')(.1)[:-1]
+    arrayBl = np.hstack([np.outer(np.ones(256), plotBl), np.outer(np.linspace(0,1,256), np.ones(1))])
+    arrayOr = np.hstack([np.outer(np.ones(256), plotOr), np.outer(np.linspace(0,1,256), np.ones(1))])
+    cmapBl = ListedColormap(arrayBl)
+    cmapOr = ListedColormap(arrayOr)
+    cmapList = [cmapBl, cmapOr]
+
+    #colormap norm
+    cnorm = LogNorm(1e-2*v, v) if logNorm else Normalize(0, v)
 
     #prepare to store plots for legends
-    p_sep = [[None] * 4] * 2
+    pSep = [None] * nTracs
 
 def tidy_up_plots():
+    #colorbar
+    for j in range(nTracs):
+        cbar = plt.colorbar(pSep[j], cax=cSep[j])
+        cbar.ax.tick_params(labelsize=bfs-4)
+        cbar.ax.set_ylabel(r'$p$ ('+labels[j]+')', fontsize=bfs)
+
+    #grids
+    for aa in aSep.flatten():
+        aa.set_xticks(np.pi/2 * np.arange(4))
+        aa.set_yticks([Rmax/4, Rmax/2, 3*Rmax/4])
+        aa.grid(alpha=.2)
+    aSep[-1,0].set_yticklabels(['{0:.1f}'.format(r) for r in [Rmax/4, Rmax/2, 3*Rmax/4]],
+                               position=(np.pi,0), fontsize=bfs-2, ha='center')
+
+
     #save
     if saveFigures:
         today = np.datetime64('today').item()
         todayStr = '{0:02d}{1:02d}'.format(today.month, today.day)
-        plt.figure(f_sep.number)
-        plt.savefig(fname)
-        #plt.savefig('../figures/'+todayStr+'_fig2.png')
+        plt.figure(fSep.number)
+        #plt.savefig(fname)
+        plt.savefig('../figures/'+todayStr+'_fig1.png')
 
 if __name__ == "__main__":
     try:
         initialize_plots()
 
+        for j1 in range(nTracs):
+            for j2 in range(nTimes):
+                p_j = p[j1].sel(time=times[j2], method='nearest')
+                pSep[j1] = aSep[j1,j2].pcolormesh(θ, r, p_j, norm=cnorm,
+                                                  shading='gouraud', cmap=cmapList[j1])
 
         tidy_up_plots() 
         plt.show()

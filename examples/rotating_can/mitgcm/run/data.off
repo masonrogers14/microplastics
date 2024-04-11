@@ -1,0 +1,12 @@
+ &OFFLINE_PARM01
+  UvelFile= 'off/B0.980_U',
+  VvelFile= 'off/B0.980_V',
+  WvelFile= 'off/B0.980_W',
+ &
+
+ &OFFLINE_PARM02
+  offlineIter0=0,
+  deltaToffline=1.0e-3,
+  offlineForcingPeriod=1.0e-3,
+  offlineForcingCycle=1.0e-3,
+ &

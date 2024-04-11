@@ -7,7 +7,6 @@
  implicitDiffusion=.FALSE.,
  globalFiles=.TRUE.,
  useSingleCpuIO=.TRUE.,
- linFSConserveTr=.TRUE.,
  &
 
 # Elliptic solver parameters
@@ -17,13 +16,14 @@
 # Time stepping parameters
  &PARM03
  nIter0=0,
- nTimeSteps=30001,
+#endTime=43200.,
+ nTimeSteps=1000000,
  deltaT=1.0e-3,
  deltaTtracer=1.0e-3,
  deltaTClock=1.0e-3,
  abEps=0.1,
  pChkptFreq=400.0,
- chkptFreq=400.0,
+ chkptFreq=100.0,
  dumpFreq=200.0,
  monitorFreq=1.0,
  monitorSelect=1,
@@ -39,7 +39,7 @@
  dYspacing=0.01,
  xgOrigin=-0.52,
  ygOrigin=-0.52,
- delZ=1*1.0,
+ delZ=50*0.02,
  &
 
 # Input datasets
