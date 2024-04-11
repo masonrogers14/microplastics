@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-kv_var.py computes E[R^2] for the Kauffman vortex and compares it to a
+kv_var.py computes E[R^2] for the Kaufmann vortex and compares it to a
 theoretical prediction.
 
 For P(R^2 << a^2) ~ 1, E[R^2] -> 2κ/c where c = lim(r -> 0) -v_r/r is the

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-kv_fig2.py plots the variance growth for two configurations of the Kauffman vortex
+kv_fig2.py plots the variance growth for two configurations of the Kaufmann vortex
 experiment.
 
 Created on Fri Jul 22 2022

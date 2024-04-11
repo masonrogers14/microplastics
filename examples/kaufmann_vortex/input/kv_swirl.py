@@ -9,7 +9,7 @@ Ls = 1.0 #characteristic length scale of flow
 #stochastic parameters
 κ = 4e-5
 
-#Kauffman vortex parameters
+#Kaufmann vortex parameters
 R = .5
 a = .2
 Γ = 1.

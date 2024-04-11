@@ -6,7 +6,7 @@ Created on Tue Dec 7 2021
 @author Mason Rogers
 
 kv_sde_4d.jl is the parent script for a simulation of an ensemble of particles
-in a Kauffman vortex. Running via SLURM automatically enables multiprocessing
+in a Kaufmann vortex. Running via SLURM automatically enables multiprocessing
 with all available processors.
 =#
 

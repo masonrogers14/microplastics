@@ -6,7 +6,7 @@ Created on Fri Jul 16 2021
 @author: Mason Rogers
 
 kv_fpe_2d.py solves the Fokker-Planck equation for a distribution of particles
-in a Kauffman vortex using Dedalus. Multiprocessing is enabled natively; use
+in a Kaufmann vortex using Dedalus. Multiprocessing is enabled natively; use
 > mpiexec -n <# of procs> kv_fpe_2d.py
 """
 

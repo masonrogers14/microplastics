@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 """
 kv_figc.py plots the variance growth and snapshots for two configurations of the
-Kauffman vortex experiment.
+Kaufmann vortex experiment.
 
 Created on Mon Oct 31 2022
 
