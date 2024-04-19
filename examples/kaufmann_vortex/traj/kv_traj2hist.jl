@@ -1,51 +1,40 @@
 #!/usr/bin/env julia
 # -*- coding utf-8 -*-
 #=
-Created on Sat Dec 18 2021
+Created on Wed Apr 17 2024
 
 @author Mason Rogers
 
-kv_traj2hist.jl takes trajectory ensembles from DiffEq.jl and generates gridded
-output analogous to MITgcm output.
+kv_traj2hist.jl takes trajectory ensembles from DiffEq.jl and generates 
+gridded output analogous to MITgcm output.
 =#
 
 #imports
+using Pkg
+Pkg.activate(".")
 using Printf, StatsBase
 
-#grid parameters
-const nx = Int(round(2*R/dx)) + 4
-const ny = Int(round(2*R/dy)) + 4
-const nz = 1
-const vol = dx*dy*dz
-const XG = dx .* collect(-nx/2:nx/2-1)
-const XC = XG .+ dx/2
-const YG = dy .* collect(-ny/2:ny/2-1)
-const YC = YG .+ dy/2
-const RF = dz .* collect(nz:-1:0) #length nz+1
-const RC = (RF[1:end-1] .+ RF[2:end]) ./ 2
-const nOuts = Int(floor(tStop/wFreq) + 1)
-
-#histogram bin edges and flips
-const edges = (vcat(XG, maximum(XG)+dx), vcat(YG, maximum(YG)+dy))
-const flip_last = false
-
 #save trajectories
-function save_trajectories(j::Int64)
-    t_suffix = @sprintf ".%010d.bin" Int(round((wFreq*j+initTime) / dt))
+function save_trajectories(j)
+    t_suffix = @sprintf(".%010d_%04d.bin",
+                        Int(round((wFreq*j+initTime) / dt)),
+                        myid())
     io = open(t_prefix*t_suffix, "w")
-    write(io, temp_arr)
+    write(io, step_arr)
     close(io)
 end
 
 #compute and save histogram data in MITgcm format
-function save_histogram(j::Int64)
-    v = .~ isnan.(temp_arr[1,:])
-    l = size(temp_arr)[1]%3==0 ? 3 : 2
-    h_j = fit(Histogram, ([temp_arr[i,v] for i in 1:l]...,), edges).weights
+function save_histogram(j)
+    v = .~ isnan.(step_arr[1,:])
+    l = size(step_arr)[1]%3==0 ? 3 : 2
+    h_j = fit(Histogram, ([step_arr[i,v] for i in 1:l]...,), edges).weights
     if flip_last
         h_j = reverse(h_j, dims=length(size(h_j)))
 	end
-    h_suffix = @sprintf ".%010d.data" Int(round((wFreq*j+initTime) / dt))
+    h_suffix = @sprintf(".%010d_%04d.data",
+                        Int(round((wFreq*j+initTime) / dt)),
+                        myid())
     io = open(h_prefix*h_suffix, "w")
     write(io, hton.(convert(Array{Float32,2}, h_j/(vol*nTraj))))
     close(io)

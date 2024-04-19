@@ -1,50 +1,20 @@
 #!/usr/bin/env julia
 # -*- coding utf-8 -*-
 #=
-Created on Tue Dec 7 2021
+Created on Wed Apr 17 2024
 
 @author Mason Rogers
 
-kv_sde_init.jl defines the constants and functions required on every processor
-used in a multiprocessor ensemble solution of SDEs.
+new_kv_sde_init.jl defines the constants and functions required on every
+processor used in a multiprocessor ensemble solution of SDEs.
 =#
 
 #imports
 using Pkg
 Pkg.activate(".")
-using DifferentialEquations, Printf, Distributed
+using StochasticDiffEq, DiffEqCallbacks, Printf, Distributed
 
-##########   PARAMETERS   ############################################
-#read parameters
-io = open("kv_param.py", "r")
-param_str_list = readlines(io)
-close(io)
-for param_str in param_str_list
-    param_expr = Meta.parse(param_str)
-    if !(typeof(param_expr) == Nothing)
-        if param_expr.head == :(=)
-            if isinteractive()
-                eval(param_expr)
-            else
-                eval(Expr(:const, param_expr))
-            end
-        end
-    end
-end
-
-#nondimensional parameters
-const ϵ = ((1+2*B)*d^2*Us)/(36*ν*Ls) #should be small
-const C = (2*g*(B-1)*Ls*ϵ)/((1+2*B)*Us^2) #should be O(1)
-const A = κ/ϵ/Us/Ls
-@printf "A: %.6f\n" A
-@printf "C: %.6f\n" C
-@printf "ϵ: %.6f\n" ϵ
-@printf "κ: %.6f\n" κ
-
-#4d noise magnitude
-const α = sqrt(2*Us^3*A/Ls/ϵ)
-
-##########   FLUID DYNAMICS   ########################################
+##########   FLUID FIELDS   ####################################################
 #fluid velocities
 function fluid_vel(t, x, y)
     ρ = sqrt(x^2 + y^2)
@@ -74,7 +44,7 @@ function parti_vel(t, x, y)
     return [u, v]
 end
 
-##########   DIFFERENTIAL EQUATIONS   ################################
+##########   DIFFERENTIAL EQUATIONS   ##########################################
 #4d deterministic equations
 function mre_det_4d!(ξ̇, ξ, q, t)
     x, y, u, v = ξ
@@ -108,7 +78,7 @@ function mre_sto_2d!(ξ̇, ξ, q, t)
     ξ̇[2] = sqrt(2*κ)
 end
 
-##########   INITIAL AND BOUNDARY CONDITIONS   ########################
+##########   INITIAL AND BOUNDARY CONDITIONS   #################################
 #4d random ensemble initial conditions
 function rand_ic_4d!(p, i, r)
     x₁ = x₀ + sqrt(Σ)*randn(2)
@@ -123,15 +93,9 @@ function rand_ic_2d!(p, i, r)
     return p
 end
 
-#retrieve initial conditions from process 1
-function get_ic(i::Int64)
-    return temp_arr[:,i]
-end
-
 #continue ensemble
 function renew!(p, i, r)
-    @printf "proc: %d \n" myid()
-    p.u0 .= remotecall_fetch(get_ic, 1, i)
+    p.u0 .= step_arr[:,i]
     return p
 end
 
@@ -148,7 +112,87 @@ function reflect!(integrator)
     #integrator.u[3] -= 2*sn*x/sqrt(x^2+y^2)
     #integrator.u[4] -= 2*sn*y/sqrt(x^2+y^2)
 end
-cb_out = ContinuousCallback(out_of_domain, reflect!, save_positions=(false,false))
+cb_out = ContinuousCallback(out_of_domain,
+                            reflect!,
+                            save_positions=(false,false))
 
 #package callbacks
 cb_set = CallbackSet(cb_out)
+
+##########   ENSEMBLE PROBLEMS   ###############################################
+#initialize storage arrays
+step_arr = NaN * zeros(nDim, nPerProc)
+
+#initial conditions
+x₀ = [x0, y0] #supplied in kv_param.py
+u₀ = fluid_vel(0, x₀...)
+
+function run_sde()
+    #decide between 2D or 4D
+    if nDim == 4
+        ic_func! = rand_ic_4d!
+        det_func! = mre_det_4d!
+        sto_func! = mre_sto_4d!
+        ξ₀ = vcat(x₀, u₀)
+    elseif nDim == 2
+        ic_func! = rand_ic_2d!
+        det_func! = mre_det_2d!
+        sto_func! = mre_sto_2d!
+        ξ₀ = x₀
+    end
+
+    #choose initial conditions: either random or from file
+    println("setting initial conditions")
+    if initTime == 0
+        #initial conditions        
+        init_prob = SDEProblem(det_func!, sto_func!, ξ₀, (0.0, 5e-4),
+                               save_everystep=false, save_end=false)
+        init_ense = EnsembleProblem(init_prob, prob_func=ic_func!)
+        init_solu = solve(init_ense, SOSRI(), EnsembleThreads(), 
+                          trajectories=nPerProc, dt=5e-4, adaptive=false)
+        for i in 1:nPerProc
+            step_arr[:,i] = init_solu[i][1]
+        end
+        #save trajectories
+        if saveTraj
+            save_trajectories(0)
+        end
+        #compute and save histogram data in MITgcm format
+        if saveHist
+            save_histogram(0)
+        end 
+    else
+        t_suffix = @sprintf ".%010d_%04d.bin" Int(round(initTime/dt)) myid()
+        initFile = t_prefix*t_suffix
+        read!(initFile, step_arr)
+        #compute and save histogram data in MITgcm format
+        if saveHist
+            save_histogram(0)
+        end
+    end
+
+    #run solver (either in memory or in chunks of wFreq)
+    println("running")
+    for j in 1:nOuts-1
+        prob = SDEProblem(det_func!,
+                          sto_func!, 
+                          zeros(nDim), 
+                          (wFreq*(j-1), wFreq*j),
+                          save_everystep=false, save_end=true)
+        ense = EnsembleProblem(prob, prob_func=renew!)
+        solu = solve(ense, SOSRI(), EnsembleThreads(),
+                    trajectories=nPerProc, callback=cb_set, dt=5e-4,
+                    adaptive=false)
+        for i in 1:nPerProc
+            step_arr[:,i] = solu[i][end]
+        end
+        #save trajectories
+        if saveTraj || j == nOuts-1
+            save_trajectories(j)
+        end
+        #compute and save histogram data in MITgcm format
+        if saveHist 
+            save_histogram(j)
+        end
+    end
+end
