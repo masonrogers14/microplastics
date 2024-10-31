@@ -1,0 +1,10 @@
+for i in $(seq 1 30)
+do
+    if [[ $i -lt 10 ]]
+    then
+        i='0'$i
+    fi
+    link='https://thredds.socib.es/thredds/fileServer/operational_models/oceanographical/hydrodynamics/wmop_3d/2022/06/roms_wmop_3d_202206'$i'.nc'
+    wget $link
+done
+

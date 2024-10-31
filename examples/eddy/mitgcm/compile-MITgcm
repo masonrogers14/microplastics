@@ -1,0 +1,14 @@
+#!/bin/bash
+echo "module add engaging/intel/2013.1.046"
+module add engaging/intel/2013.1.046
+module rm netcdf/4.6.3-parallel
+
+export MITGCM_ROOTDIR=/nobackup1c/users/masonr/MITgcm/
+
+make Clean
+/nobackup1c/users/masonr/MITgcm/tools/genmake2 -mods=../code -of /nobackup1c/users/masonr/MITgcm/tools/build_options/linux_amd64_ifort+impi -mpi -devel
+#../../../tools/genmake2 -mods=../code -of ../../../tools/build_options/linux_amd64_ifort+impi -mpi
+
+make depend -j 16
+make -j 16
+#scp ../build/mitgcmuv ../run

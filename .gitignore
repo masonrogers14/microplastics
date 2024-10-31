@@ -15,3 +15,6 @@ stdout
 julia*
 __pycache__
 output
+build/
+code/
+run*/
