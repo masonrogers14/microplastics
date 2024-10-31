@@ -17,9 +17,11 @@ using Distributed
 using ClusterManagers
 
 #multiprocessor setup
-addprocs_slurm(parse(Int, ENV["SLURM_NTASKS"]) - 1,
-               nodes=parse(Int, ENV["SLURM_NNODES"]),
-               exename="/home/software/julia/1.8.5/bin/julia")
+if "SLURM_NTASKS" in keys(ENV)
+    addprocs_slurm(parse(Int, ENV["SLURM_NTASKS"]) - 1,
+                   nodes=parse(Int, ENV["SLURM_NNODES"]),
+                   exename="/home/software/julia/1.8.5/bin/julia")
+end
 
 #tinker
 @everywhere nDim = 4
@@ -28,8 +30,8 @@ addprocs_slurm(parse(Int, ENV["SLURM_NTASKS"]) - 1,
 @everywhere saveHist = false
 @everywhere packGrid = true
 @everywhere dir = "/pool001/masonr/kv4d/"
-@everywhere t_prefix = dir*"parallel"
-@everywhere h_prefix = dir*"parallel"
+@everywhere t_prefix = dir*"exp2_2e"
+@everywhere h_prefix = dir*"exp2_2e"
 @everywhere initTime = 0.
 
 #initialize
@@ -43,4 +45,4 @@ if packGrid
 end
 
 #run
-@everywhere run_sde()
+#@everywhere run_sde()

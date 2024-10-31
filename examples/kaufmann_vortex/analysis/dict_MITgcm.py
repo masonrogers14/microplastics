@@ -17,8 +17,12 @@ import xgcm as xg
 
 #data locations
 dirs = ['../output/exp1/', '../output/exp2/']
-fnames = [['julia4dx', 'julia2dx', 'dedalus2d', 'mitgcm2d'], ['julia4dx', 'julia2dx', 'dedalus2d', 'mitgcm2d']]
+fnames = [['julia4dx', 'julia2dx', 'dedalus2d', 'mitgcm2d'], ['exp2_2e', 'parallel2d', 'dedalus2d', 'mitgcm2d']]
 iters = [np.arange(0,100000,1000), np.arange(0,100000,1000)]
+
+#dirs = ['/pool001/masonr/kv4d/', '/pool001/masonr/../masonr/kv4d/']
+#fnames = [['exp1'], ['exp1']]
+#iters = [np.arange(0, 2000000, 10000)]*2
 
 #dirs = ['../mitgcm/run/']; fnames=[['mitgcm2d_quad']]; iters = [np.arange(0, 30001, 1000)]
 #dirs = ['../output/for_movies/']; fnames = [['julia4d', 'mitgcm2d_movie']]; iters = [np.arange(0, 30001, 250)];
@@ -50,8 +54,12 @@ for d, fs, i in zip(dirs, fnames, iters):
                             'Y': {'center':'YC', 'left':'YG'}})
 
 
-#hasty garbage code
-x = ds[dirs[0]]
+##hasty garbage code
+#x = ds[dirs[0]]
+#x['TRAC02'] = x['TRAC01']
+#x['TRAC03'] = x['TRAC01']
+#x['TRAC04'] = x['TRAC01']
+#x = ds[dirs[1]]
 #x['TRAC02'] = x['TRAC01']
 #x['TRAC03'] = x['TRAC01']
 #x['TRAC04'] = x['TRAC01']

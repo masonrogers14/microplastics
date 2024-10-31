@@ -15,8 +15,8 @@ a = 1.
 Γ = 20.
 
 #solver parameters
-tStop = 2000.0
-wFreq = 10.0
+tStop = 100.0
+wFreq = 1.0
 
 #output grid parameters
 dx = .01

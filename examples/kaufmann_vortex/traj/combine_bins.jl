@@ -52,3 +52,24 @@ function compute_histogram(arr)
     return h
 end
 
+#take per-proc trajectories and compute combined histogram
+function multi_traj_to_single_hist(nProc)
+    for iter in 0 : Int(round(wFreq/dt)) : Int(round(tStop/dt))
+        hist = zeros(nx, ny)
+        fnames = [
+            Printf.format(Printf.Format("%s.%010d_%04d.bin"), t_prefix, iter, i) 
+            for i in 1:nProc
+        ]
+        traj = zeros(nDim, nTraj÷nProc)
+        for fname in fnames
+            read!(fname, traj)
+            hist = hist + compute_histogram(traj)
+        end
+        hist = hist / nTraj / vol
+        fout = Printf.format(Printf.Format("%s.%010d.data"), t_prefix, iter)
+        io = open(fout, "w")
+        write(io, hton.(convert(Array{Float32, 2}, hist)))
+        close(io)
+        println(sum(hist))
+    end
+end

@@ -163,7 +163,7 @@ def Σp_lines_small(t, j):
     #3 cases: Σc < ll, ll < Σc < ul, ul < Σc
     lΣ = np.minimum((ll-Σc[j])*np.exp(2*c[j]*np.max(t)) + Σc[j], ll)
     uΣ = np.maximum((ul-Σc[j])*np.exp(2*c[j]*np.max(t)) + Σc[j], ul)
-    Σ0 = np.sinh(np.linspace(np.arcsinh(lΣ), np.arcsinh(uΣ), 20)) 
+    Σ0 = Σc[j]*np.sinh(np.linspace(np.arcsinh(lΣ/Σc[j]), np.arcsinh(uΣ/Σc[j]), 20)) 
     for Σ0_j in Σ0:
         pVar[j][nPerCf] = aVar[j].plot(t, Σp_small(t, j, Σ0_j), 
                                          color='grey', alpha=0.5, lw=blw/2)[0]
@@ -182,8 +182,8 @@ def Σp_lines_large(t, j):
 
 def tidy_up_plots():
     #legends
-    labels0 = ['full Monte Carlo', 'reduced Monte Carlo', 'reduced Dedalus', 'reduced MITgcm', r'$R \ll a$ prediction']
-    labels1 = ['full Monte Carlo', 'reduced Monte Carlo', 'reduced Dedalus', 'reduced MITgcm', r'$R \gg a$ prediction']
+    labels0 = ['full Monte Carlo', 'reduced Monte Carlo', 'reduced Dedalus', 'reduced MITgcm', r'$R \ll a$ limit']
+    labels1 = ['full Monte Carlo', 'reduced Monte Carlo', 'reduced Dedalus', 'reduced MITgcm', r'$R \gg a$ limit']
     aVar[0].legend(pVar[0], labels0, title='Simulation', fontsize=bfs-2, title_fontsize=bfs-2)
     aVar[1].legend(pVar[1], labels1, title='Simulation', fontsize=bfs-2, title_fontsize=bfs-2)
 
