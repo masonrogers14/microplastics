@@ -17,18 +17,16 @@ from matplotlib.colors import LogNorm, to_rgba, ListedColormap
 
 #tinker
 saveFigures = True
-pFiles = ['p_small.py', 'p_large.py']
 
 #imports
 import numpy as np
-import xarray as xr
 import matplotlib.pyplot as plt
-from read_MITgcm import ds, gr, dirs
+from dict_MITgcm import ds
 
 #relevant variables for plot parameters
 nConfs = len(ds.keys())
-zSnaps = np.array([0, 15, 27])
-tSnap = -1
+zSnaps = np.array([0, 21, 27])
+tSnap = 72
 xSlice = -1 # < 0 --> integrate
 ySlice = -1
 zSlice = -1
@@ -43,7 +41,8 @@ def gen_op_cmap(c, α0=0):
         rgb = to_rgba(c)[:-1]
     else:
         rgb = c[0:3]
-    arr = np.hstack([np.outer(np.ones(256), rgb), np.outer(np.linspace(α0,1,256), np.ones(1))])
+    arr = np.hstack([np.outer(np.ones(256), rgb),
+                     np.outer(np.linspace(α0,1,256), np.ones(1))])
     return ListedColormap(arr)
 def gen_white_cmap(c, α0=0):
     if isinstance(c, str):
@@ -64,24 +63,22 @@ cTopo = gen_op_cmap('black')
 p = {}
 pMax = 0
 for k in ds.keys():
-    pTot = (ds[k]['TRAC01']*ds[k]['DRF']*ds[k]['RAC']).isel(time=0).sum()
-    p[k] = (ds[k]['TRAC01']*ds[k]['DRF']).isel(time=tSnap, Z=zSnaps) / pTot
+    pTot = (ds[k]['TRAC01']*ds[k]['drF']*ds[k]['rA']).isel(time=0).sum()
+    p[k] = (ds[k]['TRAC01']).isel(time=tSnap, Z=zSnaps) / pTot
     pMax = np.maximum(pMax, p[k].max())
+pMax.load()
+
 
 
 '''-----------------------------------------------------------------------------
 ----------PLOT------------------------------------------------------------------
 -----------------------------------------------------------------------------'''
-#tinker
-bfs = 14
-blw = 2
-
 def initialize_plots():
     #declare variables
     global fC, aC, pC, cC
 
     #declare plots
-    fC = plt.figure(figsize=(5,5), layout='constrained')
+    fC = plt.figure(figsize=(8, 6), layout='constrained')
     gC = fC.add_gridspec(nSnaps, nConfs+1, width_ratios=[9, 9, 1])
     aC = np.array([np.array([fC.add_subplot(gC[i,j])
                    for j in range(0, nConfs)])
@@ -89,12 +86,11 @@ def initialize_plots():
     cC = fC.add_subplot(gC[:,-1])
 
     #label axes
-    for a in aC[-1]: a.set_xlabel(r'longitude', fontsize=bfs)
+    for a in aC[-1]: a.set_xlabel('longitude [deg]')
     for j in range(nSnaps): 
-        aC[j,0].set_ylabel('$z = {0:.0f}$ m\nlatitude'.format(ds[k]['Z'][zSnaps[j]]),
-                            fontsize=bfs)
-    aC[0,0].set_title('fluid parcels', fontsize=bfs)
-    aC[0,1].set_title('microplastics\n$(B=.99, d=.1 \ {\sfm m})$', fontsize=bfs)
+        aC[j,0].set_ylabel('$z = {0:.0f}$ m\nlatitude [deg]'.format(ds[k]['Z'][zSnaps[j]]))
+    aC[0,0].set_title('fluid parcels')
+    aC[0,1].set_title('inertial particles')
 
     #tick formatting
     for a in aC.flatten():
@@ -109,7 +105,7 @@ def initialize_plots():
 def tidy_up_plots():
     #colorbars
     cbar = plt.colorbar(pC[0][0], cax=cC)
-    cbar.set_label('$p(x, y) \ [{\sf 10^{-12} m^{-2}}]$', fontsize=bfs)
+    cbar.set_label('$p(x, y) \ [{\sf 10^{-12} m^{-2}}]$')
 
     #share axes
     for a in aC.flatten():
@@ -127,10 +123,11 @@ def tidy_up_plots():
         today = np.datetime64('today').item()
         todayStr = '{0:02d}{1:02d}'.format(today.month, today.day)
         plt.figure(fC.number) 
-        plt.savefig('../figures/'+todayStr+'_fig1.png')
+        plt.savefig('../figures/gs_fig1.png', dpi=200, transparent=False)
 
 if __name__ == "__main__":
     try:
+        plt.style.use('mason')
         initialize_plots()
 
         for r in range(nSnaps):

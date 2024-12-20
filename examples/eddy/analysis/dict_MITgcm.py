@@ -16,10 +16,10 @@ import numpy as np
 import xgcm as xg
 
 #data locations
-#dirs = ['/pool001/masonr/eddyF/', '/pool001/masonr/eddyD/']
-#fnames = [['231205_fluid_4_diff'], ['231205_parti_4_diff']]
-dirs = ['/pool001/masonr/eddyD/', '/pool001/masonr/eddyRevisions/']
-fnames = [['231205_parti_4_diff'], ['B0.999996_d5e-03']]
+dirs = ['/pool001/masonr/eddyF/', '/pool001/masonr/eddyD/']
+fnames = [['231205_fluid_4_diff'], ['231205_parti_4_diff']]
+# dirs = ['/pool001/masonr/eddyD/', '/pool001/masonr/eddyRevisions/']
+# fnames = [['231205_parti_4_diff'], ['B0.999996_d5e-03']]
 
 #iters = [np.arange(0, 93311+1, 864)]*2
 iters = [np.arange(0, 93311+1, 864)]*2
@@ -40,7 +40,9 @@ for d, fs, i in zip(dirs, fnames, iters):
         
         n_j = len(tmp[f].data_vars)
         for j in range(1, n_j+1):
-            tmp[f] = tmp[f].rename({'TRAC{0:02d}'.format(j): 'TRAC{0:02d}'.format(j+nSoFar)})
+            tmp[f] = tmp[f].rename(
+                {'TRAC{0:02d}'.format(j): 'TRAC{0:02d}'.format(j+nSoFar)}
+            )
         nSoFar += n_j
 
     ds[d] = xr.merge(tmp.values())

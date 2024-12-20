@@ -29,7 +29,7 @@ from dict_MITgcm import ds, gr, dirs
 
 #relevant variables for plot parameters
 nConfs = len(ds.keys())
-zSnaps = np.array([0, 15, 25])
+zSnaps = np.array([0, 19, 25])
 tSnap = -1
 xSlice = -1 # < 0 --> integrate
 ySlice = -1
@@ -73,12 +73,11 @@ for k in ds.keys():
 ----------PLOT------------------------------------------------------------------
 -----------------------------------------------------------------------------'''
 #tinker
-bfs = 12
 blw = 2
 
 def initialize_plots():
     #declare plots
-    fC = plt.figure(figsize=(5,5), layout='constrained')
+    fC = plt.figure(figsize=(8, 6), layout='constrained')
     gC = fC.add_gridspec(nSnaps+1, nConfs+1,
                          height_ratios=[1]+[9]*nSnaps, width_ratios=[9]*nConfs+[1])
     aC = np.array([np.array([fC.add_subplot(gC[i,j])
@@ -88,13 +87,14 @@ def initialize_plots():
     tC = fC.add_subplot(gC[0, :-1])
 
     #label axes
-    for a in aC[-1]: a.set_xlabel('longitude [deg]', fontsize=bfs)
+    for a in aC[-1]: a.set_xlabel('longitude [deg]')
     for j in range(nSnaps): 
-        aC[j,0].set_ylabel('$z = {0:.0f}$ m\nlatitude [deg]'.format(ds[k]['Z'][zSnaps[j]]),
-                            fontsize=bfs)
-    #aC[0,0].set_title('fluid parcels', fontsize=bfs)
-    #aC[0,1].set_title('microplastics\n$(B=.99, d=.1 \ {\sfm m})$', fontsize=bfs)
-    tC.set_title('time since release: {0:02d} days'.format(0), fontsize=bfs)
+        aC[j,0].set_ylabel(
+            '$z = {0:.0f}$ m\nlatitude [deg]'.format(ds[k]['Z'][zSnaps[j]])
+        )
+    aC[0,0].set_title('fluid parcels')
+    aC[0,1].set_title('inertial particles')
+    tC.set_title('time since release: {0:02d} days'.format(0))
 
     #tick formatting
     for a in aC.flatten():
@@ -104,6 +104,9 @@ def initialize_plots():
         a.yaxis.set_major_formatter(lambda x, pos: '{0:.0f}'.format(x))
     tC.set_xticks([])
     tC.set_yticks([])
+
+    #spines
+    tC.spines[['top', 'right']].set_visible(True)
     
     #prepare to store plots for legends
     pC = [None for _ in range(nConfs*nSnaps + 1)]
@@ -113,7 +116,7 @@ def initialize_plots():
 def tidy_up_plots(fC, aC, pC, cC):
     #colorbars
     cbar = plt.colorbar(pC[0], cax=cC)
-    cbar.set_label('$p(x, y) \ [{\sf 10^{-12} m^{-3}}]$', fontsize=bfs)
+    cbar.set_label('$p(x, y) \ [{\sf 10^{-12} m^{-3}}]$')
     yTicks = np.union1d(cC.get_yticks(), cC.get_ylim())
     yTicks = yTicks[(yTicks >= cC.get_ylim()[0]) & (yTicks <= cC.get_ylim()[1])]
     yExp = np.floor(np.log10(yTicks))
@@ -143,7 +146,7 @@ def make_movie(i):
         (np.ones((2, i)), np.zeros((2, p[k]['time'].size-1-i))),
         axis=1
     ))
-    tC.set_title('time since release: {0:02d} days'.format((i+1)//2), fontsize=bfs)
+    tC.set_title('time since release: {0:02d} days'.format((i+1)//2))
     return pC
 
 if __name__ == "__main__":
@@ -178,14 +181,15 @@ if __name__ == "__main__":
 
         today = np.datetime64('today').item()
         if saveMovie:
-            m = movie.FuncAnimation(fC, make_movie, frames=p[k]['time'].size, blit=True)
+            m = movie.FuncAnimation(fC, make_movie, frames=p[k].time.size, blit=True)
             Writer = movie.writers['ffmpeg_file']
             writer = Writer(fps=15, metadata=dict(artist='Mason'), bitrate=1500)
-            mname = '../figures/{0:02d}{1:02d}_gs_sbs_movie.mp4'.format(today.month, today.day)
-            m.save(mname, writer=writer)
+            mname = '../figures/gs_sbs_movie_x.mp4'
+            m.save(mname, writer=writer, dpi=200)
         if saveStill:
-            fname = '../figures/{0:02d}{1:02d}_gs_sbs_still.png'.format(today.month, today.day)
-            plt.savefig(fname)
+            fC.delaxes(tC)
+            fname = '../figures/gs_sbs_still_x.png'
+            plt.savefig(fname, dpi=200, transparent=False)
 
         plt.show()
     finally:

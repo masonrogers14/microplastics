@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 """
-gs_ic.py plots thei nitial conditions
+gs_ic.py plots the initial conditions
 
 Created on Thu Jul 13 2023
 
@@ -15,9 +15,9 @@ Created on Thu Jul 13 2023
 saveFigures = True
 uFile = '../mitgcm/gulf_stream/gs_0607.nc'
 gFile = '../mitgcm/gulf_stream/gs_grid.nc'
-pFile = '/pool001/masonr/eddy/p_230712_blob.bin'
-AFile = '/pool001/masonr/eddy/RAC.data'
-dzFile = '/pool001/masonr/eddy/DRF.data'
+pFile = '/pool001/masonr/eddyF/p_230712_blob.bin'
+AFile = '/pool001/masonr/eddyF/RAC.data'
+dzFile = '/pool001/masonr/eddyF/DRF.data'
 
 #imports
 import xgcm as xg
@@ -85,16 +85,12 @@ top = (me['Depth'] == 0).isel(i=slice(1,-1), j=slice(1,-1))
 '''-----------------------------------------------------------------------------
 ----------PLOT------------------------------------------------------------------
 -----------------------------------------------------------------------------'''
-#tinker
-bfs = 12
-blw = 2
-
 def initialize_plots():
     #declare variables
     global f, a, p
 
     #declare plots
-    f, a = plt.subplots(figsize=(9, 3), nrows=1, ncols=4,
+    f, a = plt.subplots(figsize=(10, 3), nrows=1, ncols=4,
                         layout='constrained',
                         gridspec_kw={'width_ratios': [1, .1, .3, 1]})
 
@@ -102,22 +98,22 @@ def initialize_plots():
     a[1].set_visible(False)
 
     #label axes
-    # f.suptitle('Initial Release', fontsize=bfs+2)
-    # a[0].set_title('vorticity', fontsize=bfs)
-    a[0].set_xlabel('longitude [deg]', fontsize=bfs-2)
-    a[0].set_ylabel('latitude [deg]', fontsize=bfs-2)
-    # a[3].set_title('initial release', fontsize=bfs)
-    a[2].set_xlabel(r'$p_0(z) \ [{\sf m^{-1}}]$', fontsize=bfs-2)
-    a[2].set_ylabel('depth [m]', fontsize=bfs-2)
-    a[3].set_xlabel('longitude [deg]', fontsize=bfs-2)
+    # f.suptitle('Initial Release', fontsize='large')
+    # a[0].set_title('vorticity')
+    a[0].set_xlabel('longitude [deg]', fontsize='small')
+    a[0].set_ylabel('latitude [deg]', fontsize='small')
+    # a[3].set_title('initial release')
+    a[2].set_xlabel(r'$p_0(z) \ [{\sf m^{-1}}]$', fontsize='small')
+    a[2].set_ylabel('depth [m]', fontsize='small')
+    a[3].set_xlabel('longitude [deg]', fontsize='small')
 
-    #column labels
-    a[0].set_title('(a)', fontsize=bfs-2, loc='left')
-    a[2].set_title('(b)', fontsize=bfs-2, loc='left')
-    a[3].set_title('(c)', fontsize=bfs-2, loc='left')
+    # #column labels
+    # a[0].set_title('(a)', fontsize='small', loc='left')
+    # a[2].set_title('(b)', fontsize='small', loc='left')
+    # a[3].set_title('(c)', fontsize='small', loc='left')
 
     #tick formatting
-    for aa in a: aa.tick_params(labelsize=bfs-4, which='both')
+    for aa in a: aa.tick_params(labelsize='x-small', which='both')
 
     #spines
     a[2].spines.right.set_visible(False)
@@ -148,10 +144,11 @@ def tidy_up_plots():
         today = np.datetime64('today').item()
         todayStr = '{0:02d}{1:02d}'.format(today.month, today.day)
         plt.figure(f.number) 
-        plt.savefig('../figures/'+todayStr+'_figIC.png')
+        plt.savefig('../figures/gsIC.png', dpi=200, transparent=False)
 
 if __name__ == "__main__":
     try:
+        plt.style.use('mason')
         initialize_plots()
 
         #transpose everything

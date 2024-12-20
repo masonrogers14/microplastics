@@ -33,10 +33,6 @@ print(v)
 '''-----------------------------------------------------------------------------
 --------PLOTTING FUNCTIONS------------------------------------------------------
 -----------------------------------------------------------------------------'''
-#tinker
-bfs = 14
-blw = 1.5
-
 def gen_op_cmap(c):
     if isinstance(c, str):
         rgb = to_rgba(c)[:-1]
@@ -55,7 +51,7 @@ def initialize_plots():
     f_p, a_p = plt.subplots(figsize=(10,7), constrained_layout=True)
 
     #titles
-    a_p.set_title("Microplastics in Gulf Stream", fontsize=bfs+2)
+    a_p.set_title("Microplastics in Gulf Stream", fontsize='large')
 
     #prepare to store plots for legends
     p_p = [None] * nTracs
@@ -83,6 +79,7 @@ def startmovie():
 
 if __name__ == "__main__":
     try:
+        plt.style.use('mason')
         initialize_plots()
         for i in range(nTracs-1,-1,-1):
             p_p[i] = a_p.pcolormesh(p['XC'], p['YC'], p['TRAC0'+str(i+1)].isel(time=0),
