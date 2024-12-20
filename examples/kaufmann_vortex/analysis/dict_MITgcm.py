@@ -17,7 +17,10 @@ import xgcm as xg
 
 #data locations
 dirs = ['../output/exp1/', '../output/exp2/']
-fnames = [['julia4dx', 'julia2dx', 'dedalus2d', 'mitgcm2d'], ['exp2_2e', 'parallel2d', 'dedalus2d', 'mitgcm2d']]
+fnames = [
+    ['julia4dx', 'julia2dx', 'dedalus2d', 'mitgcm2d', 'exp1_det'],
+    ['exp2_2e', 'parallel2d', 'dedalus2d', 'mitgcm2d', 'exp2_det']
+]
 iters = [np.arange(0,100000,1000), np.arange(0,100000,1000)]
 
 #dirs = ['/pool001/masonr/kv4d/', '/pool001/masonr/../masonr/kv4d/']
@@ -51,7 +54,11 @@ for d, fs, i in zip(dirs, fnames, iters):
     gr[d] = xg.Grid(ds[d],
                     coords={'Z': {'center': 'Z', 'left':'Zl'},
                             'X': {'center':'XC', 'left':'XG'},
-                            'Y': {'center':'YC', 'left':'YG'}})
+                            'Y': {'center':'YC', 'left':'YG'}},
+                    metrics={('X',): ['dxC', 'dxG'],
+                             ('Y',): ['dyC', 'dyG'],
+                             ('Z',): ['drF'],
+                             ('X', 'Y'): ['rA', 'rAz', 'rAs', 'rAw']})
 
 
 ##hasty garbage code

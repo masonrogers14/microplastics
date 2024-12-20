@@ -25,13 +25,13 @@ end
 
 #tinker
 @everywhere nDim = 4
-@everywhere nTraj = 10000000
+@everywhere nTraj = 500000
 @everywhere saveTraj = true
 @everywhere saveHist = false
 @everywhere packGrid = true
 @everywhere dir = "/pool001/masonr/kv4d/"
-@everywhere t_prefix = dir*"exp2_2e"
-@everywhere h_prefix = dir*"exp2_2e"
+@everywhere t_prefix = dir*"exp1_det"
+@everywhere h_prefix = dir*"exp1_det"
 @everywhere initTime = 0.
 
 #initialize
@@ -45,4 +45,4 @@ if packGrid
 end
 
 #run
-#@everywhere run_sde()
+@everywhere run_sde()

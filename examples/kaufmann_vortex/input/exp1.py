@@ -7,7 +7,7 @@ Us = 1.0 #characteristic velocity scale of flow
 Ls = 1.0 #characteristic length scale of flow
 
 #stochastic parameters
-κ = 4e-5
+κ = 0#4e-5
 
 #Kaufmann vortex parameters
 R = 2.
