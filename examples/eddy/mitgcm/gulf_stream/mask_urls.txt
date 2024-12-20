@@ -1,0 +1,6 @@
+https://data.nas.nasa.gov/ecco/download_data.php?file=/eccodata/llc_4320/grid/hFacC.data
+https://data.nas.nasa.gov/ecco/download_data.php?file=/eccodata/llc_4320/grid/hFacS.data
+https://data.nas.nasa.gov/ecco/download_data.php?file=/eccodata/llc_4320/grid/hFacW.data
+https://data.nas.nasa.gov/ecco/download_data.php?file=/eccodata/llc_4320/grid/hFacC.meta
+https://data.nas.nasa.gov/ecco/download_data.php?file=/eccodata/llc_4320/grid/hFacS.meta
+https://data.nas.nasa.gov/ecco/download_data.php?file=/eccodata/llc_4320/grid/hFacW.meta
